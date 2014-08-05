@@ -96,6 +96,13 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
             return this.settings[this.currentSettings];
         },
 
+        newPreset: function() {
+            var preset = angular.copy(this.settings[this.currentSettings]);
+            preset.name = "Preset " + new Date().toLocaleDateString();
+            this.settings.push(preset);
+            this.settings.save();
+        },
+
         reset: function() {
             window.localStorage.removeItem("RBAPokerTimer_Settings");
 
@@ -395,8 +402,8 @@ pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", f
 
     $scope.totalPrizes = function() {
         return $scope.players * $scope.settings.buyinCost +
-        $scope.addons * $scope.settings.addonCost +
-        $scope.rebuys * $scope.settings.rebuyCost;
+            $scope.addons * $scope.settings.addonCost +
+            $scope.rebuys * $scope.settings.rebuyCost;
     }
 
     $scope.onBuyIn = function() {
@@ -511,6 +518,10 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
 
     $scope.editableSettings = {};
 
+    $scope.prizes = [];
+
+    $scope.allSettings = settings.settings;
+
     function levels_copy ( source, dest ) {
         dest.splice(0,dest.length);
         for(var i = 0; i < source.length; ++i) {
@@ -535,9 +546,21 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
         $scope.$apply();
     }
 
+    function reloadPrizes() {
+        $scope.prizes.splice(0,$scope.prizes.length);
+        var prizeSharing = settings.get().prizeSharing;
+        for(var i = 0; i < prizeSharing.length; ++i ) {
+            $scope.prizes.push ({val: prizeSharing[i]});
+        }
+        $scope.$apply();
+    }
+
     $scope.$on("showDialog", function(e,a){
         if(a.id == "#dialog-level-structure") {
             reloadLevels();
+        }
+        if(a.id == "#dialog-prize-structure") {
+            reloadPrizes();
         }
         if(a.id == "#dialog-parameters") {
             reloadSettings();
@@ -552,6 +575,23 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
     $scope.addLevel = function () {
         var lastLevel = $scope.levels[$scope.levels.length -1];
         $scope.levels.push(new PokerLevel(lastLevel.smallBlind, lastLevel.bigBlind, lastLevel.ante, lastLevel.duration));
+    };
+
+    $scope.removePrize = function (index) {
+        $scope.prizes.splice(index,1);
+        $scope.$apply();
+    };
+
+    $scope.addPrize = function () {
+        $scope.prizes.push(0);
+    };
+
+    $scope.prizesSum = function(p) {
+        var sum = 0;
+        for(var i = 0; i < p.length; ++i ) {
+            sum += p[i].val;
+        }
+        return sum;
     }
 
     $scope.saveLevelStructure = function () {
@@ -568,6 +608,15 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
         settings.get().addonCost = $scope.editableSettings.addonCost;
         $scope.$emit("settingsUpdated");
     };
+
+    $scope.savePrizes = function () {
+        settings.get().prizeSharing.splice(0,settings.get().prizeSharing.length);
+        var prizeSharing = $scope.prizes;
+        for(var i = 0; i < prizeSharing.length; ++i ) {
+            settings.get().prizeSharing.push (prizeSharing[i].val);
+        }
+        $scope.$emit("settingsUpdated");
+    }
 
     $scope.resetAllSettings = function() {
         if(confirm("This will OVERWRITE all current settings with the default ones, erasing EVERYTHING. The operation CANNOT BE undone.\n\nAre you absolutely sure?")) {
@@ -586,6 +635,10 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
             poker.reset();
         }
     }
+
+    $scope.newPreset = function() {
+        settings.newPreset();
+    }
 }]);
 
 var dialogManager = {
@@ -596,7 +649,8 @@ var dialogManager = {
 
         $(".dialog").show();
         dialog.slideDown();
-        dialog.find("input")[0].focus();
+        var controls = dialog.find("input");
+        if(controls.length>0) { controls[0].focus(); }
     },
 
     initDialog: function(dialog) {

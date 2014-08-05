@@ -151,12 +151,12 @@
                     <tr>
                         <td>Sharing</td>
                         <td>
-                            <span ng-repeat="p in settings.prizeSharing">{{p}}% </span>
+                            <span ng-repeat="p in settings.prizeSharing track by $index">{{p}}% </span>
                         </td>
                     </tr>
-                    <tr ng-repeat="p in settings.prizeSharing">
+                    <tr ng-repeat="p in settings.prizeSharing track by $index">
                         <td>{{$index+1 | place}}</td>
-                        <td>{{p / 100.0 * $parent.totalPrizes()}} €</td>
+                        <td>{{p / 100.0 * $parent.totalPrizes()|number:1}} €</td>
                     </tr>
                 </tbody>            
             </table>
@@ -169,13 +169,12 @@
                 <tbody>
                     <tr class="alternaterow">
                         <td>Current preset:</td>
-                        <td><strong id="poker-settingName" class="medium"></strong></td>
+                        <td><strong id="poker-settingName" class="medium">{{settings.name}}</strong></td>
                     </tr>
                     <tr>
                         <td>Setting presets</td>
                         <td>
-                            <input id="button-switch-settings" type="button" value="Switch preset" class="tournament" />
-                            <input id="button-save-settings" type="button" value="Create preset" class="tournament" />
+                            <input rba-dialog="#dialog-preset" type="button" value="Preset settings" class="tournament" />
                         </td>
                     </tr>
                     <tr class="alternaterow">
@@ -200,26 +199,39 @@
         <div class="dialog hidden">
         </div>
 
-        <div id="dialog-prize-structure" class="dialog-box hidden">
-            <div class="widget-title">Prize structure</div>
+        <div id="dialog-preset" class="dialog-box hidden">
+            <div class="widget-title">Presets</div>
             <div class="content">
-                Please setup your prize structure below! This setup is saved on your local computer!
+                Manage your presets here
             </div>
             <div class="widget-content">
                 <table class="widget-table">
                     <thead>
                     <tr>
-                        <th>Share percentage</th>
+                        <th>Preset name</th>
                         <th></th>
                     </tr>
                     </thead>
                     <tbody>
+                        <tr ng-repeat="set in allSettings">
+                            <td class="left"><input ng-model="set.name" type="text" class="long"/></td>
+                            <td>
+                                <button class="tournament">Export</button>
+                                <button class="tournament" ng-if="$index>0">Remove</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button class="tournament" ng-click="newPreset()">Add new (using current settings)</button>
+                                <button class="tournament" ng-click="importPreset()">Import preset</button>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
             <div class="widget-content">
-                <input type="button" value="Save" class="controls controls-save" />
-                <input type="button" value="Cancel" class="controls controls-cancel" />
+                <input type="button" value="Close" class="controls controls-save" />
             </div>
         </div>
 
@@ -266,6 +278,37 @@
             </div>
             <div class="widget-content">
                 <input type="button" value="Save" class="controls controls-save" ng-click="saveSettings()" />
+                <input type="button" value="Cancel" class="controls controls-cancel" />
+            </div>
+        </div>
+
+        <div id="dialog-prize-structure" class="dialog-box hidden">
+            <div class="widget-title">Prize structure</div>
+            <div class="content">
+                Please setup your prize structure below! This setup is saved on your local computer!
+            </div>
+            <div class="widget-content">
+                <table class="widget-table">
+                    <thead>
+                    <tr>
+                        <th>Share percentage</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="p in prizes">
+                            <td><input type="number" ng-model="p.val" /></td>
+                            <td><button class="tournament" ng-click="$parent.removePrize($index)" ng-if="$index>1">Remove</button></td>
+                        </tr>
+                        <tr>
+                            <td>Sum (should be 100): <strong>{{prizesSum(prizes)}}</strong></td>
+                            <td><button class="tournament" ng-click="addPrize()">Add</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="widget-content">
+                <input type="button" value="Save" class="controls controls-save" ng-click="savePrizes()" />
                 <input type="button" value="Cancel" class="controls controls-cancel" />
             </div>
         </div>
@@ -351,7 +394,7 @@
     <div class="widget">
         <input ng-click="start()" type="button" value="Start" class="controls" ng-disabled="isRunning()" ng-class="{disabled: isRunning()}" />
         <input ng-click="stop()" type="button" value="Stop" class="controls" ng-disabled="!isRunning()" ng-class="{disabled: !isRunning()}" />
-        <input ng-click="reset()" type="button" value="Reset" class="controls" /> |
+        <input ng-click="reset()" type="button" value="Reset tournament" class="controls" /> |
         <input ng-click="gotoNextLevel()" type="button" value="Skip level" class="controls" />
     </div>
     <div class="widget">
