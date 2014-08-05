@@ -3,25 +3,49 @@
  *
  * by ReBuildAll
  */
+"use strict"
+
 function PokerLevel(smallBlind,bigBlind,ante,duration,isBreak)
 {
-    this.smallBlind = smallBlind || 1;
-    this.bigBlind = bigBlind || 2;
-    this.ante = ante || 0;
-    this.duration = duration || 600;
-    this.isBreak = !!isBreak;
+    if(typeof(smallBlind) === "object") {
+        var otherLevel = smallBlind;
+
+        this.smallBlind = otherLevel.smallBlind;
+        this.bigBlind = otherLevel.bigBlind;
+        this.ante = otherLevel.ante;
+        this.duration = otherLevel.duration;
+        this.isBreak = otherLevel.isBreak;
+    }
+    else {
+        this.smallBlind = smallBlind || 1;
+        this.bigBlind = bigBlind || 2;
+        this.ante = ante || 0;
+        this.duration = duration || 600;
+        this.isBreak = !!isBreak;
+    }
 }
 
 var pokertimer = angular.module('pokertimer',[]);
 
 pokertimer.filter("place", function() {
     return function(place) {
+        var placeString;
         if ( place == 1 ) placeString = "1st";
         else if ( place ==  2 ) placeString = "2nd";
         else if ( place == 3 ) placeString = "3rd";
         else placeString = place + "th";
         return placeString;
     }
+});
+
+pokertimer.filter("minutes", function () {
+   return function (minutes) {
+       var min = (Math.floor(minutes / 60)).toString();
+       var sec = (minutes % 60).toString();
+       if(min.length<2) { min = "0"+min; }
+       if(sec.length<2) { sec = "0"+sec; }
+       return min + ":" + sec;
+   }
 });
 
 pokertimer.directive('scrollIf', function () {
@@ -34,18 +58,19 @@ pokertimer.directive('scrollIf', function () {
     }
 });
 
-pokertimer.directive("rbaDialog", function() {
+pokertimer.directive("rbaDialog", ["$rootScope", function($rootScope) {
 
    return {
       link: function(scope,element,attr,controller) {
           $(element).click(function() {
-              alert("boo");
+              $rootScope.$broadcast("showDialog", {id: attr["rbaDialog"]});
+              dialogManager.showDialog(attr["rbaDialog"]);
           })
       }
    };
-});
+}]);
 
-pokertimer.factory("settings", [function() {
+pokertimer.factory("settings", ["$rootScope", function($rootScope) {
     var settingsInstance = {
         settings: [],
         currentSettings: 0,
@@ -58,6 +83,13 @@ pokertimer.factory("settings", [function() {
             else {
                 this.settings = JSON.parse(this.settings);
             }
+
+            var that = this;
+
+            $rootScope.$on("settingsUpdated", function() {
+                that.save();
+                $rootScope.$broadcast("reload");
+            });
         },
 
         get: function() {
@@ -266,7 +298,7 @@ pokertimer.factory("poker", ["$rootScope", "$interval", "settings", "sfx", funct
 
             this.isLevelActive = true;
 
-            pokerService = this;
+            var pokerService = this;
             this.intervalId = $interval(function() {
                 pokerService.tick();
             }, 1000 );
@@ -440,6 +472,11 @@ pokertimer.controller("gamestatus",
         $("#poker-time").text(zeroPad(a.remainingMinutes,2) + ":" + zeroPad(a.remainingSeconds,2));
     });
 
+    $scope.$on("reload", function() {
+        $scope.levels = settings.get().levels;
+        $scope.currentLevelIndex = poker.currentLevel;
+    });
+
     $scope.gotoNextLevel = function () {
         sfx.stopWarning();
         sfx.startLevel();
@@ -470,207 +507,111 @@ pokertimer.controller("gamestatus",
 }]);
 
 pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,poker,settings) {
+    $scope.levels = [];
+
+    $scope.editableSettings = {};
+
+    function levels_copy ( source, dest ) {
+        dest.splice(0,dest.length);
+        for(var i = 0; i < source.length; ++i) {
+            dest.push(new PokerLevel(source[i]));
+        }
+    }
+
+    function reloadLevels() {
+        levels_copy ( settings.get().levels, $scope.levels );
+        $scope.$apply();
+    }
+
+    function reloadSettings() {
+        $scope.editableSettings = {
+            buyinChips: settings.get().buyinChips,
+            buyinCost: settings.get().buyinCost,
+            rebuyChips: settings.get().rebuyChips,
+            rebuyCost: settings.get().rebuyCost,
+            addonChips: settings.get().addonChips,
+            addonCost: settings.get().addonCost
+        };
+        $scope.$apply();
+    }
+
+    $scope.$on("showDialog", function(e,a){
+        if(a.id == "#dialog-level-structure") {
+            reloadLevels();
+        }
+        if(a.id == "#dialog-parameters") {
+            reloadSettings();
+        }
+    });
+
+    $scope.removeLevel = function (index) {
+        $scope.levels.splice(index,1);
+        $scope.$apply();
+    };
+
+    $scope.addLevel = function () {
+        var lastLevel = $scope.levels[$scope.levels.length -1];
+        $scope.levels.push(new PokerLevel(lastLevel.smallBlind, lastLevel.bigBlind, lastLevel.ante, lastLevel.duration));
+    }
+
+    $scope.saveLevelStructure = function () {
+        levels_copy ( $scope.levels, settings.get().levels );
+        $scope.$emit("settingsUpdated");
+    };
+
+    $scope.saveSettings = function () {
+        settings.get().buyinChips = $scope.editableSettings.buyinChips;
+        settings.get().buyinCost = $scope.editableSettings.buyinCost;
+        settings.get().rebuyChips = $scope.editableSettings.rebuyChips;
+        settings.get().rebuyCost = $scope.editableSettings.rebuyCost;
+        settings.get().addonChips = $scope.editableSettings.addonChips;
+        settings.get().addonCost = $scope.editableSettings.addonCost;
+        $scope.$emit("settingsUpdated");
+    };
+
+    $scope.resetAllSettings = function() {
+        if(confirm("This will OVERWRITE all current settings with the default ones, erasing EVERYTHING. The operation CANNOT BE undone.\n\nAre you absolutely sure?")) {
+            settings.reset();
+            $scope.$emit("settingsUpdated");
+            poker.stop();
+            poker.reset();
+        }
+    }
+
+    $scope.resetLevels = function() {
+        if(confirm("This will RESET the level settings for the current preset to the default ones. Your current level settings will be lost.\n\nContinue?")) {
+            settings.get().levels = settings.defaultLevels();
+            $scope.$emit("settingsUpdated");
+            poker.stop();
+            poker.reset();
+        }
+    }
 }]);
 
 var dialogManager = {
     showDialog: function(selector) {
         var dialog = $(selector);
-        
-        if ( dialog.attr("id")=="dialog-prize-structure") {
-            this.initPrizeStructure();
-        }
-        else if ( dialog.attr("id")=="dialog-level-structure") {
-            this.initLevelStructure();
-        }
-        else if ( dialog.attr("id")=="dialog-parameters") {
-            this.initParameters();
-        }
-        
+
+        this.initDialog(dialog);
+
         $(".dialog").show();
         dialog.slideDown();
         dialog.find("input")[0].focus();
     },
-    
-    buildDynamicTable: function(dataObject, containerSelector, columns, createRowFunc) {
-        $(containerSelector).html("");
-        
-        var index = 0;
-        for(var itemIndex in dataObject) {
-            var removeButton = "<span class='controls-remove'>remove</span>";            
-            if (index == 0) { removeButton = ""; }
 
-            var dataRow = createRowFunc ( dataObject[itemIndex] );
-            
-            var alternate = "";
-            if ( index % 2 == 0 ) alternate = " class='alternaterow'";
-            index++;
-            
-            var uiRow = "<tr" + alternate + ">";
-            
-            for ( var c = 0; c < columns; ++c ) {
-                var css = "";
-                if ( dataRow[c].css ) {
-                    css = " class='"+dataRow[c].css+"'";
-                }
-                uiRow += "<td><input"+css+" type='text' maxlength='9' value='"+dataRow[c].value+"'/></td>";
-            }
-            uiRow += "<td>"+removeButton+"</td></tr>";
-            
-            $(uiRow).appendTo(containerSelector);
-        }
-
-        {        
-            var alternate = "";
-            if ( index % 2 == 0 ) alternate = " class='alternaterow'";
-
-            var addRow = "<tr"+alternate+">";
-            for( var c = 0; c < columns; ++c ) {
-                addRow += "<td>&nbsp;</td>";
-            }
-            addRow += "<td><span class='controls-add'>add</span></td></tr>";
-            $(addRow).appendTo(containerSelector);
-        }
-        
-        this.registerAddRemove(containerSelector);
-    },
-    
-    initPrizeStructure: function() {
-        this.buildDynamicTable(tournamentManager.prize.sharing,"#dialog-prize-structure .widget-table tbody",1,function(dataItem) {
-            return [{value: dataItem}];
+    initDialog: function(dialog) {
+        var that = this;
+        dialog.find(".controls-save").off("click.rbadialog").on("click.rbadialog", function() {
+            that.closeDialog(dialog);
+        });
+        dialog.find(".controls-cancel").off("click.rbadialog").on("click.rbadialog", function() {
+            that.closeDialog(dialog);
         });
     },
 
-    initLevelStructure: function() {
-        this.buildDynamicTable(pokerTimer.levels, "#dialog-level-structure .widget-table tbody", 4, function(dataItem) {
-            return [{css: "setup-input-smallblind", value: dataItem.smallBlind},
-                    {css: "setup-input-bigblind", value: dataItem.bigBlind},
-                    {css: "setup-input-ante", value: dataItem.ante},
-                    {css: "setup-input-duration", value: dataItem.duration}];            
-        });
-    },
-    
-    savePrizeStructure: function() {
-        var sharesUI = $("#dialog-prize-structure .widget-table tbody .setup-input-share");
-        var shares = [];
-        
-        for(var i = 0; i < sharesUI.length; ++i ) {
-            shares.push(this.parseInteger(sharesUI[i].value));
-        }
-        
-        tournamentManager.prize.sharing = shares;
-        
-        tournamentManager.savePrize();
-        tournamentManager.updateUI();
-        
-        return true;
-    },
-    
-    saveLevelStructure: function() {
-        var levelsUI = $("#dialog-level-structure .widget-table tbody tr");
-        var levels = [];
-        
-        for(var i = 0; i < levelsUI.length - 1; ++i ) {
-            var smallblind = this.parseInteger($(levelsUI[i]).find(".setup-input-smallblind").val(),-1);
-            var bigblind  = this.parseInteger($(levelsUI[i]).find(".setup-input-bigblind").val(),-1);
-            var ante = this.parseInteger($(levelsUI[i]).find(".setup-input-ante").val(),-1);
-            var duration = this.parseInteger($(levelsUI[i]).find(".setup-input-duration").val(),-1);
-            
-            if ( smallblind < 0 || bigblind < 0 || ante < 0 || duration < 0 ) return false;
-            
-            if ( duration < 60 ) {
-                duration = 60;
-            }
-            
-            var level = new PokerLevel( smallblind, bigblind, ante, duration );
-            levels.push(level);
-        }
-        
-        pokerTimer.levels = levels;
-        
-        pokerTimer.saveLevels();
-        pokerTimer.refreshLevels();
-        pokerTimer.refreshBlinds();
-        pokerTimer.updateTime();
-        
-        return true;
-    },
-    
-    initParameters: function() {
-        $("#setup-buyin").val(tournamentManager.settings.buyinCost);
-        $("#setup-buyin-chips").val(tournamentManager.settings.buyinChips);
-        $("#setup-rebuy").val(tournamentManager.settings.rebuyCost);
-        $("#setup-rebuy-chips").val(tournamentManager.settings.rebuyChips);
-        $("#setup-addon").val(tournamentManager.settings.addonCost);
-        $("#setup-addon-chips").val(tournamentManager.settings.addonChips);
-    },
-    
-    saveParameters: function() {
-        tournamentManager.settings.buyinCost = this.parseInputInteger("#setup-buyin",10);
-        tournamentManager.settings.buyinChips = this.parseInputInteger("#setup-buyin-chips",400);
-        tournamentManager.settings.rebuyCost = this.parseInputInteger("#setup-rebuy",10);
-        tournamentManager.settings.rebuyChips = this.parseInputInteger("#setup-rebuy-chips",400);
-        tournamentManager.settings.addonCost = this.parseInputInteger("#setup-addon",10);
-        tournamentManager.settings.addonChips = this.parseInputInteger("#setup-addon-chips",400);
- 
-        tournamentManager.saveSettings();
-        tournamentManager.updateUI();
-        
-        return true;
-    },
-    
-    parseInputInteger: function(selector,def) {
-        var val = $(selector).val();
-        return this.parseInteger(val,def);
-    },
-
-    parseInteger: function(val,def) {
-        var par = parseInt(val);
-        if ( isNaN(par) ) { return def; }
-        else return par;
-    },
-    
-    registerAddRemove: function(selector) {
-        $(selector).find(".controls-remove").click(function() {
-            $(this).parents("tr").remove();
-        });
-        $(selector).find(".controls-add").click(function() {
-            var template = $(this).parents("tbody").find("tr:first-child").clone();
-            template.find("td:last-child").html("<span class='controls-remove'>remove</span>");
-            template.find(".controls-remove").click(function() {
-                $(this).parents("tr").remove();
-            });
-            $(this).parents("tr").before(template);
-        });
-    },
-    
-    register: function() {
-        var instance = this;
-        $(".dialog, .dialog-box").hide();
-       
-        $(".controls-cancel").click(function() {
-            $(".dialog, .dialog-box").fadeOut();
-        });
-        $(".controls-save").click(function() {
-            var div = $(this).parents(".dialog-box");
-            if ( div.length == 0 ) return;
-            
-            var id = div.attr("id");
-            
-            var res = true;
-            if ( id == "dialog-parameters" ) {
-                res = instance.saveParameters();
-            }
-            else if ( id == "dialog-prize-structure" ) {
-                res = instance.savePrizeStructure();
-            }
-            else if ( id == "dialog-level-structure" ) {
-                res = instance.saveLevelStructure();
-            }
-            
-            if ( res ) {
-                $(".dialog, .dialog-box").hide();
-            }
-        });
+    closeDialog: function(dialog) {
+        dialog.fadeOut();
+        $(".dialog").fadeOut();
     }
 };
 
@@ -688,5 +629,4 @@ $(function() {
             $("#update-notification").show();
         },false);
     }
-    
 });

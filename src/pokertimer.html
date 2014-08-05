@@ -181,21 +181,163 @@
                     <tr class="alternaterow">
                         <td>Settings</td>
                         <td>
-                            <input id="button-setup-parameters" type="button" value="Parameters" class="tournament" />
-                            <input id="button-setup-prizes" type="button" value="Prizes" class="tournament" />
-                            <input rba-dialog type="button" value="Levels" class="tournament" />
+                            <input rba-dialog="#dialog-parameters" type="button" value="Parameters" class="tournament" />
+                            <input rba-dialog="#dialog-prize-structure" type="button" value="Prizes" class="tournament" />
+                            <input rba-dialog="#dialog-level-structure" type="button" value="Levels" class="tournament" />
                         </td>
                     </tr>
                     <tr>
                         <td>Reset</td>
                         <td>
-                            <input id="button-reset-levels" type="button" value="Reset Levels" class="tournament" />
-                            <input id="button-reset-all" type="button" value="Reset Everything" class="tournament" />
+                            <input ng-click="resetLevels()" type="button" value="Reset Levels" class="tournament" />
+                            <input ng-click="resetAllSettings()" type="button" value="Reset Everything" class="tournament" />
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+
+        <div class="dialog hidden">
+        </div>
+
+        <div id="dialog-prize-structure" class="dialog-box hidden">
+            <div class="widget-title">Prize structure</div>
+            <div class="content">
+                Please setup your prize structure below! This setup is saved on your local computer!
+            </div>
+            <div class="widget-content">
+                <table class="widget-table">
+                    <thead>
+                    <tr>
+                        <th>Share percentage</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="widget-content">
+                <input type="button" value="Save" class="controls controls-save" />
+                <input type="button" value="Cancel" class="controls controls-cancel" />
+            </div>
+        </div>
+
+        <div id="dialog-parameters" class="dialog-box hidden">
+            <div class="widget-title">Tournament parameters</div>
+            <div class="widget-content">
+                Please setup your parameters structure below! This setup is saved on your local computer!
+            </div>
+            <div class="widget-content">
+                <table class="widget-table">
+                    <thead>
+                    <tr>
+                        <th>Option</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td class="left">Buy-in cost</td>
+                        <td class="center"><input type="text" ng-model="editableSettings.buyinCost" /></td>
+                    </tr>
+                    <tr class="alternaterow">
+                        <td class="left">Buy-in chips</td>
+                        <td class="center"><input type="text" ng-model="editableSettings.buyinChips" /></td>
+                    </tr>
+                    <tr>
+                        <td class="left">Re-buy cost</td>
+                        <td class="center"><input type="text" ng-model="editableSettings.rebuyCost" /></td>
+                    </tr>
+                    <tr class="alternaterow">
+                        <td class="left">Re-buy chips</td>
+                        <td class="center"><input type="text" ng-model="editableSettings.rebuyChips" /></td>
+                    </tr>
+                    <tr>
+                        <td class="left">Add-on cost</td>
+                        <td class="center"><input type="text" ng-model="editableSettings.addonCost" /></td>
+                    </tr>
+                    <tr class="alternaterow">
+                        <td class="left">Add-on chips</td>
+                        <td class="center"><input type="text" ng-model="editableSettings.addonChips" /></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="widget-content">
+                <input type="button" value="Save" class="controls controls-save" ng-click="saveSettings()" />
+                <input type="button" value="Cancel" class="controls controls-cancel" />
+            </div>
+        </div>
+
+        <div id="dialog-level-structure" class="dialog-box hidden">
+            <div class="widget-title">Tournament levels</div>
+            <div class="widget-content">
+                Please setup your level structure below! This setup is saved on your local computer!
+            </div>
+            <div class="widget-content">
+                <div class="widget-longlist">
+                    <table class="widget-table">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th>Small blind</th>
+                            <th>Big blind</th>
+                            <th>Ante</th>
+                            <th>Duration in seconds</th>
+                            <th>Is break?</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="lvl in levels">
+                            <td>{{$index+1}}</td>
+                            <td>
+                                <input type="number" ng-model="lvl.smallBlind" ng-disabled="lvl.isBreak" class="setup-input-smallblind" ng-if="!lvl.isBreak"/>
+                                <img src='break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
+                            </td>
+                            <td>
+                                <input type="number" ng-model="lvl.bigBlind" ng-disabled="lvl.isBreak" class="setup-input-bigblind" ng-if="!lvl.isBreak" />
+                                <img src='break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
+                            </td>
+                            <td>
+                                <input type="number" ng-model="lvl.ante" ng-disabled="lvl.isBreak" class="setup-input-ante" ng-if="!lvl.isBreak"/>
+                                <img src='break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
+                            </td>
+                            <td><input type="number" ng-model="lvl.duration" class="setup-input-duration"/></td>
+                            <td><input type="checkbox" ng-model="lvl.isBreak"  /></td>
+                            <td><button class="tournament" ng-click="$parent.removeLevel($index)" ng-if="$index>0">Remove</button></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><button class="tournament" ng-click="addLevel()">Add</button></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th></th>
+                            <th>Small blind</th>
+                            <th>Big blind</th>
+                            <th>Ante</th>
+                            <th>Duration in seconds</th>
+                            <th>Is break?</th>
+                            <th></th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+            <div class="widget-content">
+                <input type="button" value="Save" class="controls controls-save" ng-click="saveLevelStructure()" />
+                <input type="button" value="Cancel" class="controls controls-cancel" />
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -229,7 +371,7 @@
                         <td ng-show="lvl.isBreak"><img src='break.png' alt='Break' title='break' class='poker-break-medium' /></td>
                         <td ng-hide="lvl.isBreak">{{lvl.smallBlind}}-{{lvl.bigBlind}}<span ng-show="lvl.ante>0"> + {{lvl.ante}}</span></td>
                         <td ng-show="lvl.isBreak">Break</span></td>
-                        <td>{{lvl.duration/60}} min</td>
+                        <td>{{lvl.duration|minutes}}</td>
                     </tr>
                 </tbody>
                 <tfoot>
@@ -248,118 +390,9 @@
 </div>
 
 <div class="footer-copyright">
-    <a href="usage.html" target="_blank">How to use?</a> | <a href="history.html" target="_blank">version 0.3.0 (beta)</a>, Copyright &copy; 2012-2013 by ReBuildAll
+    <a href="usage.html" target="_blank">How to use?</a> | <a href="history.html" target="_blank">version 0.4.1 (beta)</a>, Copyright &copy; 2012-2014 by ReBuildAll
 </div>
 
-<div class="dialog hidden">
-</div>
-
-<div id="dialog-prize-structure" class="dialog-box hidden">
-    <div class="widget-title">Prize structure</div>
-    <div class="content">
-        Please setup your prize structure below! This setup is saved on your local computer!
-    </div>
-    <div class="widget-content">
-        <table class="widget-table">
-            <thead>
-                <tr>
-                    <th>Share percentage</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-    <div class="widget-content">
-        <input type="button" value="Save" class="controls controls-save" />
-        <input type="button" value="Cancel" class="controls controls-cancel" />
-    </div>
-</div>
-
-<div id="dialog-parameters" class="dialog-box hidden">
-    <div class="widget-title">Tournament parameters</div>
-    <div class="widget-content">
-        Please setup your parameters structure below! This setup is saved on your local computer!
-    </div>
-    <div class="widget-content">
-        <table class="widget-table">
-            <thead>
-                <tr>
-                    <th>Option</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td class="left">Buy-in cost</td>
-                    <td class="center"><input type="text" id="setup-buyin" value="0" /></td>
-                </tr>
-                <tr class="alternaterow">
-                    <td class="left">Buy-in chips</td>
-                    <td class="center"><input type="text" id="setup-buyin-chips" value="0" /></td>
-                </tr>
-                <tr>
-                    <td class="left">Re-buy cost</td>
-                    <td class="center"><input type="text" id="setup-rebuy" value="0" /></td>
-                </tr>
-                <tr class="alternaterow">
-                    <td class="left">Re-buy chips</td>
-                    <td class="center"><input type="text" id="setup-rebuy-chips" value="0" /></td>
-                </tr>
-                <tr>
-                    <td class="left">Add-on cost</td>
-                    <td class="center"><input type="text" id="setup-addon" value="0" /></td>
-                </tr>
-                <tr class="alternaterow">
-                    <td class="left">Add-on chips</td>
-                    <td class="center"><input type="text" id="setup-addon-chips" value="0" /></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="widget-content">
-        <input type="button" value="Save" class="controls controls-save" />
-        <input type="button" value="Cancel" class="controls controls-cancel" />
-    </div>
-</div>
-
-<div id="dialog-level-structure" class="dialog-box hidden">
-    <div class="widget-title">Tournament levels</div>
-    <div class="widget-content">
-        Please setup your level structure below! This setup is saved on your local computer!
-    </div>
-    <div class="widget-content">
-        <div class="widget-longlist">
-            <table class="widget-table">
-                <thead>
-                    <tr>
-                        <th>Small blind</th>
-                        <th>Big blind</th>
-                        <th>Ante</th>
-                        <th>Duration in seconds</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <th>Small blind</th>
-                        <th>Big blind</th>
-                        <th>Ante</th>
-                        <th>Duration in seconds</th>
-                        <th></th>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-    <div class="widget-content">
-        <input type="button" value="Save" class="controls controls-save" />
-        <input type="button" value="Cancel" class="controls controls-cancel" />
-    </div>
-</div>
 
 <script>
     $(function() {
