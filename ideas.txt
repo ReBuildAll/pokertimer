@@ -1,0 +1,2 @@
+- When last player is out, show game over, stop counting
+- Add option to undo player out
