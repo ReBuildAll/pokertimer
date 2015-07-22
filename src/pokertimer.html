@@ -2,12 +2,12 @@
 <html > <!-- manifest="pokertimer_bak.appcache" -->
 <head>
     <title>ReBuildAll PokerTimer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/pokertimer.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.21/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js"></script>
     <script src="pokertimer.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="pokertimer.css" />
-    
     <LINK rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <LINK rel="icon" type="image/ico" href="favicon.ico">    
     
@@ -36,10 +36,10 @@
 
 <div id="warning">
     <p>
-    Your browser does not support HTML5 functionality, like local storage. Please upgrade!
+        Your browser does not support HTML5 functionality, like local storage. Please upgrade!
     <p>
     <p> 
-    Supported browsers:
+        Supported browsers:
     <ul>
         <li>Internet Explorer 9+ (<a target="_blank" href="http://www.microsoft.com/ie">download</a>)</li>
         <li>Google Chrome (<a target="_blank" href="http://www.google.com/chrome">download</a>)</li>
@@ -50,59 +50,80 @@
 </div>
 
 <audio id="audio-level">
-  <source src="airhorn.mp3" />
-  <source src="airhorn.ogg" />
+  <source src="sounds/airhorn.mp3" />
+  <source src="sounds/airhorn.ogg" />
 </audio>
 
 <audio id="audio-minute">
-  <source src="ticking.mp3" />
-  <source src="ticking.ogg" />
+  <source src="sounds/ticking.mp3" />
+  <source src="sounds/ticking.ogg" />
 </audio>
 
 <div id="application" class="hidden" ng-controller="tournament">
-
-<div class="application-leftside">
-    <div id="poker-currentlevel" class="widget" ng-controller="gamestatus">
-        <div class="widget-title">Blinds</div>
-        <div class="widget-biginfo poker-current-blinds" ng-hide="getCurrentLevel().isBreak">{{getCurrentLevel().smallBlind}}-{{getCurrentLevel().bigBlind}}</div>
-        <div class="widget-smallinfo poker-current-ante" ng-hide="getCurrentLevel().isBreak">Ante: {{getCurrentLevel().ante}}</div>
-        <div class="widget-smallinfo poker-next-blinds" ng-show="getCurrentLevel().isBreak"><img src='break.png' alt='Break' title='break' class='poker-break-large' /></div>
-        <div class="widget-smallinfo poker-next-ante" ng-show="getCurrentLevel().isBreak">Break</div>
-    </div>
-    <div id="poker-tournament" class="widget">
-        <div class="widget-title">Tournament</div>
-        <div class="widget-content">
-            <table class="widget-table">
-                <tbody>
-                    <tr>
-                        <td class="left">Players</td>
-                        <td class="center">{{activePlayers}} / {{players}}</td>
-                    </tr>
-                    <tr>
-                        <td class="left">Total chips</td>
-                        <td class="center">{{totalChips()}}</td>
-                    </tr>
-                    <tr>
-                        <td class="left">Average stack</td>
-                        <td class="center">{{averageChips()}}</td>
-                    </tr>
-                    <tr>
-                        <td class="left">Rebuys</td>
-                        <td class="center">{{rebuys}} / {{rebuys * settings.rebuyCost}}€</td>
-                    </tr>
-                    <tr>
-                        <td class="left">Add-ons</td>
-                        <td class="center">{{addons}} / {{addons * settings.addonCost}}€</td>
-                    </tr>
-                </tbody>
-            
-            </table>
+    <div class="application-leftside hidden-mobile">
+        <div id="poker-currentlevel" class="widget" ng-controller="gamestatus">
+            <div class="widget-title">Blinds</div>
+            <div class="widget-biginfo poker-current-blinds" ng-hide="getCurrentLevel().isBreak">{{getCurrentLevel().smallBlind}}-{{getCurrentLevel().bigBlind}}</div>
+            <div class="widget-smallinfo poker-current-ante" ng-hide="getCurrentLevel().isBreak">Ante: {{getCurrentLevel().ante}}</div>
+            <div class="widget-smallinfo poker-next-blinds" ng-show="getCurrentLevel().isBreak"><img src='images/break.png' alt='Break' title='break' class='poker-break-large' /></div>
+            <div class="widget-smallinfo poker-next-ante" ng-show="getCurrentLevel().isBreak">Break</div>
+        </div>
+        <div id="poker-nextlevel" class="widget" ng-controller="gamestatus">
+            <div class="widget-title">Next structure</div>
+            <div class="widget-smallinfo poker-next-blinds" ng-hide="getNextLevel().isBreak">{{getNextLevel().smallBlind}}-{{getNextLevel().bigBlind}}</div>
+            <div class="widget-smallinfo poker-next-ante" ng-hide="getNextLevel().isBreak">Ante: {{getNextLevel().ante}}</div>
+            <div class="widget-smallinfo poker-next-blinds" ng-show="getNextLevel().isBreak"><img src='images/break.png' alt='Break' title='break' class='poker-break-medium' /></div>
+            <div class="widget-smallinfo poker-next-ante" ng-show="getNextLevel().isBreak">Break</div>
+        </div>
+        <div class="widget-nohead widget-centered">
+            <div class="widget-content">
+                <table class="widget-table">
+                    <tbody>
+                        <tr class="alternaterow">
+                            <td>Player</td>
+                            <td>
+                                <input ng-click="onBuyIn()"  type="button" value="Buy-in" class="tournament" />
+                                <input ng-click="onPlayerOut()" type="button" value="Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
+                                <input ng-click="removePlayer()" type="button" value="--" class="tournament" ng-class="{disabled: activePlayers < 2 || players < 3}" ng-disabled="activePlayers < 2 || players < 3" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Re-buy</td>
+                            <td>
+                                <input ng-click="addRebuy()" type="button" value="++" class="tournament" />
+                                <input ng-click="removeRebuy()" ng-disabled="rebuys<1" type="button" value="--" class="tournament" ng-class="{tournament:true, disabled: rebuys < 1}"/>
+                            </td>
+                        </tr>
+                        <tr class="alternaterow">
+                            <td>Add-on</td>
+                            <td>
+                                <input ng-click="addAddOn()" type="button" value="++" class="tournament" />
+                                <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="--" ng-class="{tournament:true, disabled: addons < 1}" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
-    <div class="widget-nohead widget-centered">
-        <div class="widget-content">
-            <table class="widget-table">
-                <tbody>
+
+    <div class="application-middle" ng-controller="gamestatus">
+        <div id="poker-timeleft" class="widget">
+            <div class="widget-title">Remaining time on current Level</div>
+            <div id="poker-time">09:45</div>
+            <div id="poker-progress-empty"></div>
+            <div id="poker-progress-full"></div>
+        </div>
+        <div class="widget">
+            <input ng-click="start()" type="button" value="Start" class="controls" ng-disabled="isRunning()" ng-class="{disabled: isRunning()}" />
+            <input ng-click="stop()" type="button" value="Stop" class="controls" ng-disabled="!isRunning()" ng-class="{disabled: !isRunning()}" />
+            <input ng-click="reset()" type="button" value="Reset tournament" class="controls" /> |
+            <input ng-click="gotoNextLevel()" type="button" value="Skip level" class="controls" />
+        </div>
+        <div class="widget-nohead visible-mobile">
+            <div class="widget-content">
+                <table class="widget-table">
+                    <tbody>
                     <tr class="alternaterow">
                         <td>Player</td>
                         <td>
@@ -125,317 +146,322 @@
                             <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="--" ng-class="{tournament:true, disabled: addons < 1}" />
                         </td>
                     </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-
-<div class="application-rightside">
-    <div id="poker-nextlevel" class="widget" ng-controller="gamestatus">
-        <div class="widget-title">Next structure</div>
-        <div class="widget-smallinfo poker-next-blinds" ng-hide="getNextLevel().isBreak">{{getNextLevel().smallBlind}}-{{getNextLevel().bigBlind}}</div>
-        <div class="widget-smallinfo poker-next-ante" ng-hide="getNextLevel().isBreak">Ante: {{getNextLevel().ante}}</div>
-        <div class="widget-smallinfo poker-next-blinds" ng-show="getNextLevel().isBreak"><img src='break.png' alt='Break' title='break' class='poker-break-medium' /></div>
-        <div class="widget-smallinfo poker-next-ante" ng-show="getNextLevel().isBreak">Break</div>
-    </div>
-    <div id="poker-prizes" class="widget">
-        <div class="widget-title">Prizes</div>
-        <div class="widget-content">
-            <table class="widget-table">
-                <tbody id="poker-prizes-info">
-                    <tr>
-                        <td>Prize pool</td>
-                        <td>{{totalPrizes()}} €</td>
-                    </tr>
-                    <tr>
-                        <td>Sharing</td>
-                        <td>
-                            <span ng-repeat="p in settings.prizeSharing track by $index">{{p}}% </span>
-                        </td>
-                    </tr>
-                    <tr ng-repeat="p in settings.prizeSharing track by $index">
-                        <td>{{$index+1 | place}}</td>
-                        <td>{{p / 100.0 * $parent.totalPrizes()|number:1}} €</td>
-                    </tr>
-                </tbody>            
-            </table>
-        </div>
-    </div>
-    <div id="poker-setup" class="widget" ng-controller="setup">
-        <div class="widget-title">Setup</div>
-        <div class="widget-content">
-            <table class="widget-table">
-                <tbody>
-                    <tr class="alternaterow">
-                        <td>Current preset:</td>
-                        <td><strong id="poker-settingName" class="medium">{{settings.name}}</strong></td>
-                    </tr>
-                    <tr>
-                        <td>Setting presets</td>
-                        <td>
-                            <input rba-dialog="#dialog-preset" type="button" value="Preset settings" class="tournament" />
-                        </td>
-                    </tr>
-                    <tr class="alternaterow">
-                        <td>Settings</td>
-                        <td>
-                            <input rba-dialog="#dialog-parameters" type="button" value="Parameters" class="tournament" />
-                            <input rba-dialog="#dialog-prize-structure" type="button" value="Prizes" class="tournament" />
-                            <input rba-dialog="#dialog-level-structure" type="button" value="Levels" class="tournament" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Reset</td>
-                        <td>
-                            <input ng-click="resetLevels()" type="button" value="Reset Levels" class="tournament" />
-                            <input ng-click="resetAllSettings()" type="button" value="Reset Everything" class="tournament" />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="dialog hidden">
-        </div>
-
-        <div id="dialog-preset" class="dialog-box hidden">
-            <div class="widget-title">Presets</div>
-            <div class="content">
-                Manage your presets here
-            </div>
-            <div class="widget-content">
-                <table class="widget-table">
-                    <thead>
-                    <tr>
-                        <th>Preset name</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="set in allSettings">
-                            <td class="left"><input ng-model="set.name" type="text" class="long"/></td>
-                            <td>
-                                <button class="tournament">Export</button>
-                                <button class="tournament" ng-if="$index>0">Remove</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td>
-                                <button class="tournament" ng-click="newPreset()">Add new (using current settings)</button>
-                                <button class="tournament" ng-click="importPreset()">Import preset</button>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="widget-content">
-                <input type="button" value="Close" class="controls controls-save" />
-            </div>
         </div>
-
-        <div id="dialog-parameters" class="dialog-box hidden">
-            <div class="widget-title">Tournament parameters</div>
-            <div class="widget-content">
-                Please setup your parameters structure below! This setup is saved on your local computer!
-            </div>
-            <div class="widget-content">
-                <table class="widget-table">
+        <div class="widget">
+            <div class="widget-title">Levels</div>
+            <div class="widget-list">
+                <table id="poker-levels" class="widget-table">
                     <thead>
-                    <tr>
-                        <th>Option</th>
-                        <th>Value</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td class="left">Buy-in cost</td>
-                        <td class="center"><input type="text" ng-model="editableSettings.buyinCost" /></td>
-                    </tr>
-                    <tr class="alternaterow">
-                        <td class="left">Buy-in chips</td>
-                        <td class="center"><input type="text" ng-model="editableSettings.buyinChips" /></td>
-                    </tr>
-                    <tr>
-                        <td class="left">Re-buy cost</td>
-                        <td class="center"><input type="text" ng-model="editableSettings.rebuyCost" /></td>
-                    </tr>
-                    <tr class="alternaterow">
-                        <td class="left">Re-buy chips</td>
-                        <td class="center"><input type="text" ng-model="editableSettings.rebuyChips" /></td>
-                    </tr>
-                    <tr>
-                        <td class="left">Add-on cost</td>
-                        <td class="center"><input type="text" ng-model="editableSettings.addonCost" /></td>
-                    </tr>
-                    <tr class="alternaterow">
-                        <td class="left">Add-on chips</td>
-                        <td class="center"><input type="text" ng-model="editableSettings.addonChips" /></td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="widget-content">
-                <input type="button" value="Save" class="controls controls-save" ng-click="saveSettings()" />
-                <input type="button" value="Cancel" class="controls controls-cancel" />
-            </div>
-        </div>
-
-        <div id="dialog-prize-structure" class="dialog-box hidden">
-            <div class="widget-title">Prize structure</div>
-            <div class="content">
-                Please setup your prize structure below! This setup is saved on your local computer!
-            </div>
-            <div class="widget-content">
-                <table class="widget-table">
-                    <thead>
-                    <tr>
-                        <th>Share percentage</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                        <tr ng-repeat="p in prizes">
-                            <td><input type="number" ng-model="p.val" /></td>
-                            <td><button class="tournament" ng-click="$parent.removePrize($index)" ng-if="$index>1">Remove</button></td>
-                        </tr>
-                        <tr>
-                            <td>Sum (should be 100): <strong>{{prizesSum(prizes)}}</strong></td>
-                            <td><button class="tournament" ng-click="addPrize()">Add</button></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="widget-content">
-                <input type="button" value="Save" class="controls controls-save" ng-click="savePrizes()" />
-                <input type="button" value="Cancel" class="controls controls-cancel" />
-            </div>
-        </div>
-
-        <div id="dialog-level-structure" class="dialog-box hidden">
-            <div class="widget-title">Tournament levels</div>
-            <div class="widget-content">
-                Please setup your level structure below! This setup is saved on your local computer!
-            </div>
-            <div class="widget-content">
-                <div class="widget-longlist">
-                    <table class="widget-table">
-                        <thead>
-                        <tr>
-                            <th></th>
-                            <th>Small blind</th>
-                            <th>Big blind</th>
-                            <th>Ante</th>
-                            <th>Duration in seconds</th>
-                            <th>Is break?</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr ng-repeat="lvl in levels">
-                            <td>{{$index+1}}</td>
-                            <td>
-                                <input type="number" ng-model="lvl.smallBlind" ng-disabled="lvl.isBreak" class="setup-input-smallblind" ng-if="!lvl.isBreak"/>
-                                <img src='break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
-                            </td>
-                            <td>
-                                <input type="number" ng-model="lvl.bigBlind" ng-disabled="lvl.isBreak" class="setup-input-bigblind" ng-if="!lvl.isBreak" />
-                                <img src='break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
-                            </td>
-                            <td>
-                                <input type="number" ng-model="lvl.ante" ng-disabled="lvl.isBreak" class="setup-input-ante" ng-if="!lvl.isBreak"/>
-                                <img src='break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
-                            </td>
-                            <td><input type="number" ng-model="lvl.duration" class="setup-input-duration"/></td>
-                            <td><input type="checkbox" ng-model="lvl.isBreak"  /></td>
-                            <td><button class="tournament" ng-click="$parent.removeLevel($index)" ng-if="$index>0">Remove</button></td>
-                        </tr>
-                        <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><button class="tournament" ng-click="addLevel()">Add</button></td>
-                        </tr>
-                        </tbody>
-                        <tfoot>
-                        <tr>
-                            <th></th>
-                            <th>Small blind</th>
-                            <th>Big blind</th>
-                            <th>Ante</th>
-                            <th>Duration in seconds</th>
-                            <th>Is break?</th>
-                            <th></th>
-                        </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-            <div class="widget-content">
-                <input type="button" value="Save" class="controls controls-save" ng-click="saveLevelStructure()" />
-                <input type="button" value="Cancel" class="controls controls-cancel" />
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<div class="application-middle" ng-controller="gamestatus">
-    <div id="poker-timeleft" class="widget">
-        <div class="widget-title">Remaining time on current Level</div>
-        <div id="poker-time">09:45</div>
-        <div id="poker-progress-empty"></div>
-        <div id="poker-progress-full"></div>
-    </div>
-    <div class="widget">
-        <input ng-click="start()" type="button" value="Start" class="controls" ng-disabled="isRunning()" ng-class="{disabled: isRunning()}" />
-        <input ng-click="stop()" type="button" value="Stop" class="controls" ng-disabled="!isRunning()" ng-class="{disabled: !isRunning()}" />
-        <input ng-click="reset()" type="button" value="Reset tournament" class="controls" /> |
-        <input ng-click="gotoNextLevel()" type="button" value="Skip level" class="controls" />
-    </div>
-    <div class="widget">
-        <div class="widget-title">Levels</div>
-        <div class="widget-list">
-            <table id="poker-levels" class="widget-table">
-                <thead>
                     <tr>
                         <th>Level</th>
                         <th>Blinds</th>
                         <th>Time</th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     <tr ng-repeat="lvl in levels" ng-class="{active: $index==currentLevelIndex}" scroll-if="$index == currentLevelIndex">
                         <td ng-hide="lvl.isBreak">{{$index+1}}.</td>
-                        <td ng-show="lvl.isBreak"><img src='break.png' alt='Break' title='break' class='poker-break-medium' /></td>
+                        <td ng-show="lvl.isBreak"><img src='images/break.png' alt='Break' title='break' class='poker-break-medium' /></td>
                         <td ng-hide="lvl.isBreak">{{lvl.smallBlind}}-{{lvl.bigBlind}}<span ng-show="lvl.ante>0"> + {{lvl.ante}}</span></td>
                         <td ng-show="lvl.isBreak">Break</span></td>
                         <td>{{lvl.duration|minutes}}</td>
                     </tr>
-                </tbody>
-                <tfoot>
+                    </tbody>
+                    <tfoot>
                     <tr>
                         <th>Level</th>
                         <th>Blinds</th>
                         <th>Time</th>
                     </tr>
-                </tfoot>
-            </table>
+                    </tfoot>
+                </table>
+            </div>
         </div>
     </div>
-    
-</div>
 
+    <div class="application-rightside">
+        <div id="poker-tournament" class="widget">
+            <div class="widget-title">Tournament</div>
+            <div class="widget-content">
+                <table class="widget-table">
+                    <tbody>
+                    <tr>
+                        <td class="left">Players</td>
+                        <td class="center">{{activePlayers}} / {{players}}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">Total chips</td>
+                        <td class="center">{{totalChips()}}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">Average stack</td>
+                        <td class="center">{{averageChips()}}</td>
+                    </tr>
+                    <tr>
+                        <td class="left">Rebuys</td>
+                        <td class="center">{{rebuys}} / {{rebuys * settings.rebuyCost}}€</td>
+                    </tr>
+                    <tr>
+                        <td class="left">Add-ons</td>
+                        <td class="center">{{addons}} / {{addons * settings.addonCost}}€</td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        <div id="poker-prizes" class="widget">
+            <div class="widget-title">Prizes</div>
+            <div class="widget-content">
+                <table class="widget-table">
+                    <tbody id="poker-prizes-info">
+                        <tr>
+                            <td>Prize pool</td>
+                            <td>{{totalPrizes()}} €</td>
+                        </tr>
+                        <tr>
+                            <td>Sharing</td>
+                            <td>
+                                <span ng-repeat="p in settings.prizeSharing track by $index">{{p}}% </span>
+                            </td>
+                        </tr>
+                        <tr ng-repeat="p in settings.prizeSharing track by $index">
+                            <td>{{$index+1 | place}}</td>
+                            <td>{{p / 100.0 * $parent.totalPrizes()|number:1}} €</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="poker-setup" class="widget" ng-controller="setup">
+            <div class="widget-title">Setup</div>
+            <div class="widget-content">
+                <table class="widget-table">
+                    <tbody>
+                        <tr class="alternaterow">
+                            <td>Current preset:</td>
+                            <td><strong id="poker-settingName" class="medium">{{settings.name}}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Setting presets</td>
+                            <td>
+                                <input rba-dialog="#dialog-preset" type="button" value="Presets" class="tournament" />
+                            </td>
+                        </tr>
+                        <tr class="alternaterow">
+                            <td>Settings</td>
+                            <td>
+                                <input rba-dialog="#dialog-parameters" type="button" value="Parameters" class="tournament" />
+                                <input rba-dialog="#dialog-prize-structure" type="button" value="Prizes" class="tournament" />
+                                <input rba-dialog="#dialog-level-structure" type="button" value="Levels" class="tournament" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Reset</td>
+                            <td>
+                                <input ng-click="resetLevels()" type="button" value="Reset Levels" class="tournament" />
+                                <input ng-click="resetAllSettings()" type="button" value="Reset All" class="tournament" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="dialog hidden">
+            </div>
+
+            <div id="dialog-preset" class="dialog-box hidden">
+                <div class="widget-title">Presets</div>
+                <div class="content">
+                    Manage your presets here
+                </div>
+                <div class="widget-content">
+                    <table class="widget-table">
+                        <thead>
+                        <tr>
+                            <th>Preset name</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="set in allSettings">
+                                <td class="left"><input ng-model="set.name" type="text" class="long"/></td>
+                                <td>
+                                    <button class="tournament">Export</button>
+                                    <button class="tournament" ng-if="$index>0">Remove</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td>
+                                    <button class="tournament" ng-click="newPreset()">Add new (using current settings)</button>
+                                    <button class="tournament" ng-click="importPreset()">Import preset</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="widget-content">
+                    <input type="button" value="Close" class="controls controls-save" />
+                </div>
+            </div>
+
+            <div id="dialog-parameters" class="dialog-box hidden">
+                <div class="widget-title">Tournament parameters</div>
+                <div class="widget-content">
+                    Please setup your parameters structure below! This setup is saved on your local computer!
+                </div>
+                <div class="widget-content">
+                    <table class="widget-table">
+                        <thead>
+                        <tr>
+                            <th>Option</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td class="left">Buy-in cost</td>
+                            <td class="center"><input type="text" ng-model="editableSettings.buyinCost" /></td>
+                        </tr>
+                        <tr class="alternaterow">
+                            <td class="left">Buy-in chips</td>
+                            <td class="center"><input type="text" ng-model="editableSettings.buyinChips" /></td>
+                        </tr>
+                        <tr>
+                            <td class="left">Re-buy cost</td>
+                            <td class="center"><input type="text" ng-model="editableSettings.rebuyCost" /></td>
+                        </tr>
+                        <tr class="alternaterow">
+                            <td class="left">Re-buy chips</td>
+                            <td class="center"><input type="text" ng-model="editableSettings.rebuyChips" /></td>
+                        </tr>
+                        <tr>
+                            <td class="left">Add-on cost</td>
+                            <td class="center"><input type="text" ng-model="editableSettings.addonCost" /></td>
+                        </tr>
+                        <tr class="alternaterow">
+                            <td class="left">Add-on chips</td>
+                            <td class="center"><input type="text" ng-model="editableSettings.addonChips" /></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="widget-content">
+                    <input type="button" value="Save" class="controls controls-save" ng-click="saveSettings()" />
+                    <input type="button" value="Cancel" class="controls controls-cancel" />
+                </div>
+            </div>
+
+            <div id="dialog-prize-structure" class="dialog-box hidden">
+                <div class="widget-title">Prize structure</div>
+                <div class="content">
+                    Please setup your prize structure below! This setup is saved on your local computer!
+                </div>
+                <div class="widget-content">
+                    <table class="widget-table">
+                        <thead>
+                        <tr>
+                            <th>Share percentage</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="p in prizes">
+                                <td><input type="number" ng-model="p.val" /></td>
+                                <td><button class="tournament" ng-click="$parent.removePrize($index)" ng-if="$index>1">Remove</button></td>
+                            </tr>
+                            <tr>
+                                <td>Sum (should be 100): <strong>{{prizesSum(prizes)}}</strong></td>
+                                <td><button class="tournament" ng-click="addPrize()">Add</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="widget-content">
+                    <input type="button" value="Save" class="controls controls-save" ng-click="savePrizes()" />
+                    <input type="button" value="Cancel" class="controls controls-cancel" />
+                </div>
+            </div>
+
+            <div id="dialog-level-structure" class="dialog-box hidden">
+                <div class="widget-title">Tournament levels</div>
+                <div class="widget-content">
+                    Please setup your level structure below! This setup is saved on your local computer!
+                </div>
+                <div class="widget-content">
+                    <div class="widget-longlist">
+                        <table class="widget-table">
+                            <thead>
+                            <tr>
+                                <th></th>
+                                <th>Small blind</th>
+                                <th>Big blind</th>
+                                <th>Ante</th>
+                                <th>Duration in seconds</th>
+                                <th>Is break?</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="lvl in levels">
+                                <td>{{$index+1}}</td>
+                                <td>
+                                    <input type="number" ng-model="lvl.smallBlind" ng-disabled="lvl.isBreak" class="setup-input-smallblind" ng-if="!lvl.isBreak"/>
+                                    <img src='images/break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
+                                </td>
+                                <td>
+                                    <input type="number" ng-model="lvl.bigBlind" ng-disabled="lvl.isBreak" class="setup-input-bigblind" ng-if="!lvl.isBreak" />
+                                    <img src='images/break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
+                                </td>
+                                <td>
+                                    <input type="number" ng-model="lvl.ante" ng-disabled="lvl.isBreak" class="setup-input-ante" ng-if="!lvl.isBreak"/>
+                                    <img src='images/break.png' alt='Break' title='break' class='poker-break-medium' ng-if="lvl.isBreak" />
+                                </td>
+                                <td><input type="number" ng-model="lvl.duration" class="setup-input-duration"/></td>
+                                <td><input type="checkbox" ng-model="lvl.isBreak"  /></td>
+                                <td><button class="tournament" ng-click="$parent.removeLevel($index)" ng-if="$index>0">Remove</button></td>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td><button class="tournament" ng-click="addLevel()">Add</button></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <th></th>
+                                <th>Small blind</th>
+                                <th>Big blind</th>
+                                <th>Ante</th>
+                                <th>Duration in seconds</th>
+                                <th>Is break?</th>
+                                <th></th>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                <div class="widget-content">
+                    <input type="button" value="Save" class="controls controls-save" ng-click="saveLevelStructure()" />
+                    <input type="button" value="Cancel" class="controls controls-cancel" />
+                </div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <div class="footer-copyright">
-    <a href="usage.html" target="_blank">How to use?</a> | <a href="history.html" target="_blank">version 0.4.1 (beta)</a>, Copyright &copy; 2012-2014 by ReBuildAll
+    <a href="usage.html" target="_blank">How to use?</a> | <a href="history.html" target="_blank">version 0.5 (beta)</a>, Copyright &copy; 2012-2015 by ReBuildAll Solutions Ltd.
 </div>
-
 
 <script>
     $(function() {

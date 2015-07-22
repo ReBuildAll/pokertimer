@@ -5,10 +5,10 @@
  */
 body
 {
-    font-family: Calibri, Verdana, Arial, Sans-Serif;        
-    background-image: url(background.png);
+    font-family: Helvetica Neu, Calibri, Verdana, Arial, Sans-Serif;
+    background-image: url(../images/background.png);
     background-repeat: repeat;
-    font-size: 16px;
+    font-size: 18px;
     color: white;
     background-color: black;
 }
@@ -26,31 +26,141 @@ div.hidden
 /*
  * Application frame
  */
-#application
-{
-    width: 80%;
-    min-width: 990px;
+
+#application {
+    width: 100%;
+    min-width: 300px;
     margin-left: auto;
     margin-right: auto;
+}
+
+@media (min-width: 768px)
+{
+    #application {
+        min-width: inherit;
+        width: 760px;
+    }
+}
+@media (min-width: 992px)
+{
+    #application {
+        width: 980px;
+    }
+}
+
+@media (min-width: 1200px)
+{
+    #application
+    {
+        width: 90%;
+        min-width: 1100px;
+    }
 }
 
 .application-leftside
 {
-    width: 24%;
-    float: left;
+    width: 100%;
 }
 
-.application-rightside
-{
-    width: 24%;
-    float: right;
+@media (min-width: 768px) {
+    .application-leftside{
+        width: 210px;
+        float: left;
+    }
 }
 
+@media (min-width: 992px) {
+    .application-leftside
+    {
+        width: 220px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .application-leftside
+    {
+        width: 24%;
+    }
+}
+
+.application-rightside {
+}
+
+@media (min-width: 768px) {
+    .application-rightside {
+        clear: both;
+    }
+}
+
+@media (min-width: 992px) {
+    .application-rightside {
+        clear: none;
+        width: 239px;
+        float: left;
+    }
+}
+@media (min-width: 1200px) {
+    .application-rightside {
+        width: 24%;
+    }
+}
 .application-middle
 {
-    width: 50%;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .application-middle {
+        width: 529px;
+        float: left;
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+}
+
+@media (min-width: 992px) {
+    .application-middle
+    {
+        width: 500px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .application-middle
+    {
+        width: 50%;
+    }
+}
+.application-full {
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
+}
+
+/*
+ * Special layout elements
+ */
+.visible-mobile
+{
+    display: inherit;
+}
+
+.hidden-mobile
+{
+    display: none;
+}
+
+@media (min-width: 768px)
+{
+    .visible-mobile
+    {
+        display: none;
+    }
+
+    .hidden-mobile
+    {
+        display: inherit;
+    }
 }
 
 /*
@@ -58,6 +168,7 @@ div.hidden
  */
 div.footer-copyright
 {
+    clear: both;
     text-align: right; 
     font-family: consolas, lucida console, courier new, courier, monospace;
     font-size: 80%; 
@@ -76,7 +187,7 @@ div.footer-copyright a
  */ 
 .widget
 {
-    background-image: url(topbar.png);
+    background-image: url(../images/topbar.png);
     background-repeat: repeat-x;
     background-position: top left;
 }
@@ -173,7 +284,6 @@ h1
     margin-left: auto;
     margin-right: auto;
     display: block;
-    width: 50%;
     text-align: center;
     letter-spacing: 5px;
 }
@@ -217,10 +327,6 @@ input[type=text]:disabled, input[type=number]:disabled
 
 input[type=button].controls, button.controls
 {
-    padding-left: 1em;
-    padding-right: 1em;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
     margin-top: 1em;
     margin-left: 0.5em;
     margin-bottom: 1em;
@@ -228,10 +334,6 @@ input[type=button].controls, button.controls
 
 input[type=button].tournament, button.tournament
 {
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    padding-top: 0.2em;
-    padding-bottom: 0.2em;
     margin-top: 0.2em;
     margin-left: 0.2em;
     margin-bottom: 0.2em;
@@ -239,9 +341,17 @@ input[type=button].tournament, button.tournament
 
 input[type=button].controls, input[type=button].tournament, button.controls, button.tournament
 {
-    border-color: #606060;
-    background-color: #404040;
+    padding: 0.5em 0.5em;
+    font-size: 100%;
+    font-weight: bold;
+    border: 1px solid #606060;
+    background-color: #222;
     color: white;
+    border-radius: 4px;
+}
+
+input[type=button].controls:hover, input[type=button].tournament:hover, button.controls:hover, button.tournament:hover {
+    border: 1px solid #AAA;
 }
 
 input[type=button].disabled
@@ -317,7 +427,7 @@ div.dialog
 div.dialog-box
 {
     border: 1px solid white;
-    background-image: url(topbar.png);
+    background-image: url(../images/topbar.png);
     background-repeat: repeat-x;
     background-position: top left;
     
@@ -376,7 +486,14 @@ div.dialog-box div.content
 #poker-time
 {
     font-family: Consolas, American Typewriter, sans-serif;
-    font-size: 175px;
+    font-size: 105px;
+}
+
+@media (min-width: 768px) {
+    #poker-time
+    {
+        font-size: 175px;
+    }
 }
 
 .poker-break
