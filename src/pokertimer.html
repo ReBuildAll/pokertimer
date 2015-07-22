@@ -34,7 +34,7 @@
 
 <h1><span class="red">R</span>e<span class="red">B</span>uild<span class="red">A</span>ll <span class="red">P</span>♠ker<span class="red">T</span>imer</h1>
 
-<div id="warning">
+<div id="warning" style="display:none;">
     <p>
         Your browser does not support HTML5 functionality, like local storage. Please upgrade!
     <p>
@@ -79,28 +79,25 @@
             <div class="widget-content">
                 <table class="widget-table">
                     <tbody>
-                        <tr class="alternaterow">
-                            <td>Player</td>
-                            <td>
-                                <input ng-click="onBuyIn()"  type="button" value="Buy-in" class="tournament" />
-                                <input ng-click="onPlayerOut()" type="button" value="Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
-                                <input ng-click="removePlayer()" type="button" value="--" class="tournament" ng-class="{disabled: activePlayers < 2 || players < 3}" ng-disabled="activePlayers < 2 || players < 3" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Re-buy</td>
-                            <td>
-                                <input ng-click="addRebuy()" type="button" value="++" class="tournament" />
-                                <input ng-click="removeRebuy()" ng-disabled="rebuys<1" type="button" value="--" class="tournament" ng-class="{tournament:true, disabled: rebuys < 1}"/>
-                            </td>
-                        </tr>
-                        <tr class="alternaterow">
-                            <td>Add-on</td>
-                            <td>
-                                <input ng-click="addAddOn()" type="button" value="++" class="tournament" />
-                                <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="--" ng-class="{tournament:true, disabled: addons < 1}" />
-                            </td>
-                        </tr>
+                    <tr class="alternaterow">
+                        <td>
+                            <input ng-click="onBuyIn()"  type="button" value="Buy-in" class="tournament" />
+                            <input ng-click="onPlayerOut()" type="button" value="Player Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
+                            <input ng-click="removePlayer()" type="button" value="Remove" class="tournament" ng-class="{disabled: activePlayers < 2 || players < 3}" ng-disabled="activePlayers < 2 || players < 3" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input ng-click="addRebuy()" type="button" value="Rebuy" class="tournament" />
+                            <input ng-click="removeRebuy()" ng-disabled="rebuys<1" type="button" value="Undo" class="tournament" ng-class="{tournament:true, disabled: rebuys < 1}"/>
+                        </td>
+                    </tr>
+                    <tr class="alternaterow">
+                        <td>
+                            <input ng-click="addAddOn()" type="button" value="Addon" class="tournament" />
+                            <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="Undo" ng-class="{tournament:true, disabled: addons < 1}" />
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -114,7 +111,16 @@
             <div id="poker-progress-empty"></div>
             <div id="poker-progress-full"></div>
         </div>
-        <div class="widget">
+        <div id="poker-currentlevel" class="widget visible-mobile" ng-controller="gamestatus">
+            <div class="widget-title">Blinds</div>
+            <div class="widget-biginfo poker-current-blinds" ng-hide="getCurrentLevel().isBreak">{{getCurrentLevel().smallBlind}}-{{getCurrentLevel().bigBlind}} + {{getCurrentLevel().ante}}</div>
+            <div class="widget-smallinfo poker-next-blinds" ng-show="getCurrentLevel().isBreak"><img src='images/break.png' alt='Break' title='break' class='poker-break-large' /> - Break</div>
+            <div class="widget-smallinfo poker-next-blinds" ng-hide="getNextLevel().isBreak">Next structure: {{getNextLevel().smallBlind}}-{{getNextLevel().bigBlind}} + {{getNextLevel().ante}}</div>
+            <div class="widget-smallinfo poker-next-blinds" ng-show="getNextLevel().isBreak">Next structure: <img src='images/break.png' alt='Break' title='break' class='poker-break-medium' /> - Break</div>
+            <br/>
+        </div>
+
+        <div class="widget-nohead center-mobile">
             <input ng-click="start()" type="button" value="Start" class="controls" ng-disabled="isRunning()" ng-class="{disabled: isRunning()}" />
             <input ng-click="stop()" type="button" value="Stop" class="controls" ng-disabled="!isRunning()" ng-class="{disabled: !isRunning()}" />
             <input ng-click="reset()" type="button" value="Reset tournament" class="controls" /> |
@@ -125,25 +131,31 @@
                 <table class="widget-table">
                     <tbody>
                     <tr class="alternaterow">
-                        <td>Player</td>
                         <td>
                             <input ng-click="onBuyIn()"  type="button" value="Buy-in" class="tournament" />
-                            <input ng-click="onPlayerOut()" type="button" value="Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
-                            <input ng-click="removePlayer()" type="button" value="--" class="tournament" ng-class="{disabled: activePlayers < 2 || players < 3}" ng-disabled="activePlayers < 2 || players < 3" />
+                            <input ng-click="onPlayerOut()" type="button" value="Player Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
+                            <input ng-click="removePlayer()" type="button" value="Remove" class="tournament" ng-class="{disabled: activePlayers < 2 || players < 3}" ng-disabled="activePlayers < 2 || players < 3" />
+                            <div>
+                                Players: {{activePlayers}} / {{players}}
+                            </div>
                         </td>
                     </tr>
                     <tr>
-                        <td>Re-buy</td>
                         <td>
-                            <input ng-click="addRebuy()" type="button" value="++" class="tournament" />
-                            <input ng-click="removeRebuy()" ng-disabled="rebuys<1" type="button" value="--" class="tournament" ng-class="{tournament:true, disabled: rebuys < 1}"/>
+                            <input ng-click="addRebuy()" type="button" value="Rebuy" class="tournament" />
+                            <input ng-click="removeRebuy()" ng-disabled="rebuys<1" type="button" value="Undo" class="tournament" ng-class="{tournament:true, disabled: rebuys < 1}"/>
+                            <div>
+                                Rebuys: {{rebuys}} / {{rebuys * settings.rebuyCost}}€
+                            </div>
                         </td>
                     </tr>
                     <tr class="alternaterow">
-                        <td>Add-on</td>
                         <td>
-                            <input ng-click="addAddOn()" type="button" value="++" class="tournament" />
-                            <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="--" ng-class="{tournament:true, disabled: addons < 1}" />
+                            <input ng-click="addAddOn()" type="button" value="Addon" class="tournament" />
+                            <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="Undo" ng-class="{tournament:true, disabled: addons < 1}" />
+                            <div>
+                                Addons: {{addons}} / {{addons * settings.addonCost}}€
+                            </div>
                         </td>
                     </tr>
                     </tbody>
@@ -236,36 +248,41 @@
                 </table>
             </div>
         </div>
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="application-full">
         <div id="poker-setup" class="widget" ng-controller="setup">
             <div class="widget-title">Setup</div>
             <div class="widget-content">
                 <table class="widget-table">
                     <tbody>
-                        <tr class="alternaterow">
-                            <td>Current preset:</td>
-                            <td><strong id="poker-settingName" class="medium">{{settings.name}}</strong></td>
-                        </tr>
-                        <tr>
-                            <td>Setting presets</td>
-                            <td>
-                                <input rba-dialog="#dialog-preset" type="button" value="Presets" class="tournament" />
-                            </td>
-                        </tr>
-                        <tr class="alternaterow">
-                            <td>Settings</td>
-                            <td>
-                                <input rba-dialog="#dialog-parameters" type="button" value="Parameters" class="tournament" />
-                                <input rba-dialog="#dialog-prize-structure" type="button" value="Prizes" class="tournament" />
-                                <input rba-dialog="#dialog-level-structure" type="button" value="Levels" class="tournament" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Reset</td>
-                            <td>
-                                <input ng-click="resetLevels()" type="button" value="Reset Levels" class="tournament" />
-                                <input ng-click="resetAllSettings()" type="button" value="Reset All" class="tournament" />
-                            </td>
-                        </tr>
+                    <tr class="alternaterow">
+                        <td>Current preset:</td>
+                        <td><strong id="poker-settingName" class="medium">{{settings.name}}</strong></td>
+                    </tr>
+                    <tr>
+                        <td>Setting presets</td>
+                        <td>
+                            <input rba-dialog="#dialog-preset" type="button" value="Presets" class="tournament" />
+                        </td>
+                    </tr>
+                    <tr class="alternaterow">
+                        <td>Settings</td>
+                        <td>
+                            <input rba-dialog="#dialog-parameters" type="button" value="Parameters" class="tournament" />
+                            <input rba-dialog="#dialog-prize-structure" type="button" value="Prizes" class="tournament" />
+                            <input rba-dialog="#dialog-level-structure" type="button" value="Levels" class="tournament" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Reset</td>
+                        <td>
+                            <input ng-click="resetLevels()" type="button" value="Reset Levels" class="tournament" />
+                            <input ng-click="resetAllSettings()" type="button" value="Reset All" class="tournament" />
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -287,20 +304,20 @@
                         </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="set in allSettings">
-                                <td class="left"><input ng-model="set.name" type="text" class="long"/></td>
-                                <td>
-                                    <button class="tournament">Export</button>
-                                    <button class="tournament" ng-if="$index>0">Remove</button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td>
-                                    <button class="tournament" ng-click="newPreset()">Add new (using current settings)</button>
-                                    <button class="tournament" ng-click="importPreset()">Import preset</button>
-                                </td>
-                            </tr>
+                        <tr ng-repeat="set in allSettings">
+                            <td class="left"><input ng-model="set.name" type="text" class="long"/></td>
+                            <td>
+                                <button class="tournament">Export</button>
+                                <button class="tournament" ng-if="$index>0">Remove</button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <button class="tournament" ng-click="newPreset()">Add new (using current settings)</button>
+                                <button class="tournament" ng-click="importPreset()">Import preset</button>
+                            </td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -370,14 +387,14 @@
                         </tr>
                         </thead>
                         <tbody>
-                            <tr ng-repeat="p in prizes">
-                                <td><input type="number" ng-model="p.val" /></td>
-                                <td><button class="tournament" ng-click="$parent.removePrize($index)" ng-if="$index>1">Remove</button></td>
-                            </tr>
-                            <tr>
-                                <td>Sum (should be 100): <strong>{{prizesSum(prizes)}}</strong></td>
-                                <td><button class="tournament" ng-click="addPrize()">Add</button></td>
-                            </tr>
+                        <tr ng-repeat="p in prizes">
+                            <td><input type="number" ng-model="p.val" /></td>
+                            <td><button class="tournament" ng-click="$parent.removePrize($index)" ng-if="$index>1">Remove</button></td>
+                        </tr>
+                        <tr>
+                            <td>Sum (should be 100): <strong>{{prizesSum(prizes)}}</strong></td>
+                            <td><button class="tournament" ng-click="addPrize()">Add</button></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -454,7 +471,6 @@
                     <input type="button" value="Cancel" class="controls controls-cancel" />
                 </div>
             </div>
-
         </div>
     </div>
 </div>
