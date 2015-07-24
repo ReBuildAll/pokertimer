@@ -1,0 +1,7 @@
+{ 
+	"name": "PokerTimerServer",
+  	"description": "Lightweight server for PokerTimer in Node.js",
+  	"version": "0.0.1",
+  	"devDependencies": {},
+  	"scripts": {},
+}
