@@ -1,0 +1,17 @@
+== Plans for the future
+This file contains rough plans of what I have in mind.
+
+=== v0.6
+- When last player is out, show game over, stop counting
+- Add option to undo player out
+
+=== v0.x
+- Support pinning for iOS, Android and Windows Phone
+- Update pinning information for Chrome
+- Investigate pinning in Edge
+
+=== v1.0
+
+=== v2.0
+
+
