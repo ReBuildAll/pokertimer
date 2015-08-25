@@ -3,12 +3,13 @@ CACHE MANIFEST
 # PokerTimer Application Cache
 #  for offline application access
 #
-# v0.5.0
+# v0.5.1 BETA2
 #
 pokertimer.html
 history.html
 usage.html
 pokertimer.js
+favicon.ico
 css/pokertimer.css
 sounds/airhorn.mp3
 sounds/airhorn.ogg
@@ -17,5 +18,5 @@ sounds/ticking.ogg
 images/background.png
 images/topbar.png
 images/break.png
-https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js
-https://ajax.googleapis.com/ajax/libs/angularjs/1.2.27/angular.min.js
+js/jquery.min.js
+js/angular.min.js
