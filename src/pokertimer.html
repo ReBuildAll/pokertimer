@@ -14,7 +14,7 @@
     <meta name="author" content="ReBuildAll" />
     
     <meta name="application-name" content="Poker Timer" />
-    <meta name="msapplication-tooltip" content="ReBuildAll Poker Timer (HTML5&JS&CSS3)" />
+    <meta name="msapplication-tooltip" content="ReBuildAll Poker Timer" />
     <meta name="msapplication-window" content="width=1024;height=600" />
     <meta name="msapplication-navbutton-color" content="red" />
 </head>
@@ -80,20 +80,24 @@
                 <table class="widget-table">
                     <tbody>
                     <tr class="alternaterow">
-                        <td>
+                        <td class="left">
                             <input ng-click="onBuyIn()"  type="button" value="Buy-in" class="tournament" />
-                            <input ng-click="onPlayerOut()" type="button" value="Player Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
                             <input ng-click="removePlayer()" type="button" value="Remove" class="tournament" ng-class="{disabled: activePlayers < 2 || players < 3}" ng-disabled="activePlayers < 2 || players < 3" />
                         </td>
                     </tr>
                     <tr>
-                        <td>
+                        <td class="left">
+                            <input ng-click="onPlayerOut()" type="button" value="Player Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
+                        </td>
+                    </tr>
+                    <tr class="alternaterow">
+                        <td class="left">
                             <input ng-click="addRebuy()" type="button" value="Rebuy" class="tournament" />
                             <input ng-click="removeRebuy()" ng-disabled="rebuys<1" type="button" value="Undo" class="tournament" ng-class="{tournament:true, disabled: rebuys < 1}"/>
                         </td>
                     </tr>
-                    <tr class="alternaterow">
-                        <td>
+                    <tr>
+                        <td class="left">
                             <input ng-click="addAddOn()" type="button" value="Addon" class="tournament" />
                             <input ng-click="removeAddOn()" ng-disabled="addons<1" type="button" value="Undo" ng-class="{tournament:true, disabled: addons < 1}" />
                         </td>
@@ -296,25 +300,40 @@
                     Manage your presets here
                 </div>
                 <div class="widget-content">
+                    <div ng-if="exportImport.exporting" class="export">
+                        <label for="exportvalue">Select all, copy and save somewhere safe (text file):</label>
+                        <input id="exportvalue" type="text" class="export" readonly="readonly" value="export..." ng-value="exportImport.exportValue"/>
+                    </div>
+                    <div ng-if="exportImport.importing" class="export">
+                        <label for="importvalue">Paste a saved preset in the following text box:</label>
+                        <input id="importvalue" type="text" class="export" value="import..." ng-model="exportImport.importValue"/>
+                        <button class="tournament" ng-click="importSave()">Import</button>
+                    </div>
                     <table class="widget-table">
                         <thead>
                         <tr>
+                            <th>Selected?</th>
                             <th>Preset name</th>
                             <th></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr ng-repeat="set in allSettings">
-                            <td class="left"><input ng-model="set.name" type="text" class="long"/></td>
                             <td>
-                                <button class="tournament">Export</button>
-                                <button class="tournament" ng-if="$index>0">Remove</button>
+                                <strong ng-if="$index == $parent.configuration.currentPreset">&#10004;</strong>
+                                <button class="tournament" ng-click="selectPreset($index)" ng-if="$index != $parent.configuration.currentPreset">Select</button>
+                            </td>
+                            <td class="left"><input ng-model="set.name" type="text" class="fulllong"/></td>
+                            <td class="left">
+                                <button class="tournament" ng-click="exportPreset($index)">Export</button>
+                                <button class="tournament" ng-if="$index>0" ng-click="deletePreset($index)">Remove</button>
                             </td>
                         </tr>
                         <tr>
                             <td></td>
-                            <td>
-                                <button class="tournament" ng-click="newPreset()">Add new (using current settings)</button>
+                            <td></td>
+                            <td class="left">
+                                <button class="tournament" ng-click="newPreset()">Duplicate selected</button>
                                 <button class="tournament" ng-click="importPreset()">Import preset</button>
                             </td>
                         </tr>
@@ -322,7 +341,7 @@
                     </table>
                 </div>
                 <div class="widget-content">
-                    <input type="button" value="Close" class="controls controls-save" />
+                    <input type="button" value="Close" class="controls controls-save" ng-click="savePresets()" />
                 </div>
             </div>
 

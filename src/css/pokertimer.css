@@ -281,10 +281,29 @@ div.widget-list
     height: 13em;
     overflow: auto;
 }
+
 div.widget-longlist
 {
-    height: 16em;
+    height: 12em;
     overflow: auto;
+}
+
+@media (min-height: 600px) {
+    div.widget-longlist {
+        height: 16em;
+    }
+}
+
+@media (min-height: 800px) {
+    div.widget-longlist {
+        height: 25em;
+    }
+}
+
+@media (min-height: 900px) {
+    div.widget-longlist {
+        height: 29em;
+    }
 }
 
 table.widget-table
@@ -349,8 +368,20 @@ input[type=text], input[type=number]
 }
 
 input[type=text].long {
-    width: 15em;
+    width: 18em;
 }
+
+input[type=text].fulllong {
+    width: 90%;
+}
+
+input[type=text].export {
+    margin-top: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+    color: #DDD;
+}
+
 
 input[type=text]:focus, input[type=number]:focus
 {
@@ -473,8 +504,7 @@ div.dialog-box
     background-color: #202020;
     
     margin-top: 100px;
-    min-width: 550px;
-    width: 50%;
+    width: 95%;
     margin-left: auto;
     margin-right: auto;
 
@@ -483,6 +513,24 @@ div.dialog-box
     left: 0;
     right: 0;
     top: 0;
+}
+
+@media (min-width: 768px) {
+    div.dialog-box {
+        width: 90%;
+    }
+}
+
+@media (min-width: 992px ) {
+    div.dialog-box {
+        width: 85%;
+    }
+}
+
+@media (min-width: 1200px ) {
+    div.dialog-box {
+        width: 80%;
+    }
 }
 
 div.dialog-box div.content
@@ -571,4 +619,11 @@ div.popup-update-notification
     color: black;
 }
 
-
+div.export {
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px dashed #808080;
+    padding: 1em;
+    margin-bottom: 1em;
+}

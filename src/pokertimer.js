@@ -73,15 +73,24 @@ pokertimer.directive("rbaDialog", ["$rootScope", function($rootScope) {
 pokertimer.factory("settings", ["$rootScope", function($rootScope) {
     var settingsInstance = {
         settings: [],
-        currentSettings: 0,
+        config: {
+            currentPreset: 0
+        },
 
         init: function() {
-            this.settings = window.localStorage.getItem("RBAPokerTimer_Settings");
+            this.settings = window.localStorage.getItem("RBAPokerTimer_Presets");
+            this.config = window.localStorage.getItem("RBAPokerTimer_Configuration");
             if(!this.settings) {
                 this.reset();
             }
             else {
                 this.settings = JSON.parse(this.settings);
+                this.config = JSON.parse(this.config);
+                if ( !this.config ) {
+                    this.config = {
+                        currentPreset: 0
+                    };
+                }
             }
 
             var that = this;
@@ -93,33 +102,61 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
         },
 
         get: function() {
-            return this.settings[this.currentSettings];
+            return this.settings[this.config.currentPreset];
         },
 
         newPreset: function() {
-            var preset = angular.copy(this.settings[this.currentSettings]);
+            var preset = angular.copy(this.settings[this.config.currentPreset]);
             preset.name = "Preset " + new Date().toLocaleDateString();
             this.settings.push(preset);
-            this.settings.save();
+            this.save();
+        },
+
+        removePreset: function(index) {
+            if(this.config.currentPreset >= index ) {
+                this.config.currentPreset--;
+            }
+            this.settings.splice(index,1);
+            this.save();
+        },
+
+        changePreset: function(index) {
+            this.config.currentPreset = index;
+            this.save();
         },
 
         reset: function() {
-            window.localStorage.removeItem("RBAPokerTimer_Settings");
+            window.localStorage.removeItem("RBAPokerTimer_Presets");
+            window.localStorage.removeItem("RBAPokerTimer_Configuration");
 
-            var defaultSettings = {
-                name: "RBA Home Tournament",
-                levels: this.defaultLevels(),
-                prizeSharing: [50,30,20],
-                buyinCost: 10,
-                buyinChips: 400,
-                addonChips: 400,
-                addonCost: 10,
-                rebuyChips: 400,
-                rebuyCost: 10,
-                currency: "€"
+            this.settings = [
+                    {
+                        name: "Chips 400 / 6+ players / 10€ buyin",
+                        levels: this.defaultLevels_400bi_min6(),
+                        prizeSharing: [50, 30, 20],
+                        buyinCost: 10,
+                        buyinChips: 400,
+                        addonChips: 400,
+                        addonCost: 10,
+                        rebuyChips: 400,
+                        rebuyCost: 10,
+                        currency: "€"
+                    },
+                    {
+                        name: "Chips 400 / 4-5 players / 5€ buyin",
+                        levels: this.defaultLevels_400bi_max5(),
+                        prizeSharing: [60, 40],
+                        buyinCost: 5,
+                        buyinChips: 400,
+                        addonChips: 400,
+                        addonCost: 10,
+                        rebuyChips: 400,
+                        rebuyCost: 10,
+                        currency: "€"
+                    }];
+            this.config = {
+                currentPreset: 0
             };
-
-            this.settings = [defaultSettings];
 
             var legacy = this.tryReadLegacySettings();
             if(legacy) {
@@ -129,7 +166,7 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
             this.save();
         },
 
-        defaultLevels: function() {
+        defaultLevels_400bi_min6: function() {
             return [
                 new PokerLevel(2,4),
                 new PokerLevel(4,8),
@@ -153,10 +190,34 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
             ];
         },
 
+        defaultLevels_400bi_max5: function() {
+            return [
+                new PokerLevel(2,4),
+                new PokerLevel(4,8),
+                new PokerLevel(5,10),
+                new PokerLevel(10,20),
+                new PokerLevel(20,40),
+                new PokerLevel(30,60),
+                new PokerLevel(0,0,0,600,true),
+                new PokerLevel(50,100),
+                new PokerLevel(75,150,10),
+                new PokerLevel(100,200,20),
+                new PokerLevel(125,250,20),
+                new PokerLevel(150,300,50),
+                new PokerLevel(200,400,50),
+                new PokerLevel(250,500,50),
+                new PokerLevel(300,600,100),
+                new PokerLevel(300,600,100),
+                new PokerLevel(300,600,100),
+                new PokerLevel(300,600,200),
+                new PokerLevel(300,600,300)
+            ];
+        },
+
         tryReadLegacySettings: function() {
             var legacy = {
                 name: "Settings from v0.3",
-                levels: this.defaultLevels(),
+                levels: this.defaultLevels_400bi_min6(),
                 prizeSharing: [50,30,20],
                 buyinCost: 10,
                 buyinChips: 400,
@@ -199,15 +260,17 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
         },
 
         save: function() {
-            window.localStorage.setItem("RBAPokerTimer_Settings", JSON.stringify(this.settings));
+            window.localStorage.setItem("RBAPokerTimer_Presets", JSON.stringify(this.settings));
+            window.localStorage.setItem("RBAPokerTimer_Configuration", JSON.stringify(this.config));
         },
 
         export: function(index) {
-            return JSON.stringify(this.settings[index]);
+            return angular.toJson(this.settings[index]);
         },
 
         import: function(settingsString) {
-
+            this.settings.push(JSON.parse(settingsString));
+            this.save();
         }
     };
 
@@ -437,6 +500,7 @@ pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", f
     }
 
     $scope.$on("reset",function() {
+        $scope.settings = settings.get();
         $scope.activePlayers = $scope.players;
         $scope.addins = 0;
         $scope.rebuys = 0;
@@ -522,11 +586,26 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
 
     $scope.allSettings = settings.settings;
 
+    $scope.configuration = settings.config;
+
+    $scope.exportImport = {
+        exporting: false,
+        importing: false,
+        exportValue: "",
+        importValue: ""
+    };
+
     function levels_copy ( source, dest ) {
         dest.splice(0,dest.length);
         for(var i = 0; i < source.length; ++i) {
             dest.push(new PokerLevel(source[i]));
         }
+    }
+
+    function reloadPresets() {
+        $scope.allSettings = settings.settings;
+        $scope.configuration = settings.config;
+        $scope.$apply();
     }
 
     function reloadLevels() {
@@ -565,6 +644,9 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
         if(a.id == "#dialog-parameters") {
             reloadSettings();
         }
+        if(a.id == "#dialog-preset") {
+            reloadPresets();
+        }
     });
 
     $scope.removeLevel = function (index) {
@@ -583,13 +665,13 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
     };
 
     $scope.addPrize = function () {
-        $scope.prizes.push(0);
+        $scope.prizes.push({val: 0});
     };
 
     $scope.prizesSum = function(p) {
         var sum = 0;
         for(var i = 0; i < p.length; ++i ) {
-            sum += p[i].val;
+            sum += parseInt(p[i].val);
         }
         return sum;
     }
@@ -616,7 +698,7 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
             settings.get().prizeSharing.push (prizeSharing[i].val);
         }
         $scope.$emit("settingsUpdated");
-    }
+    };
 
     $scope.resetAllSettings = function() {
         if(confirm("This will OVERWRITE all current settings with the default ones, erasing EVERYTHING. The operation CANNOT BE undone.\n\nAre you absolutely sure?")) {
@@ -625,20 +707,78 @@ pokertimer.controller("setup", ["$scope", "poker", "settings", function($scope,p
             poker.stop();
             poker.reset();
         }
-    }
+    };
+
 
     $scope.resetLevels = function() {
         if(confirm("This will RESET the level settings for the current preset to the default ones. Your current level settings will be lost.\n\nContinue?")) {
-            settings.get().levels = settings.defaultLevels();
+            settings.get().levels = settings.defaultLevels_400bi_min6();
             $scope.$emit("settingsUpdated");
             poker.stop();
             poker.reset();
         }
+    };
+
+    function noExportImport() {
+        $scope.exportImport.exporting = false;
+        $scope.exportImport.importing = false;
     }
 
     $scope.newPreset = function() {
+        noExportImport();
         settings.newPreset();
-    }
+    };
+
+    $scope.selectPreset = function(index) {
+        noExportImport();
+        if(confirm("This will change the preset but also RESET everything.\n\nContinue?")) {
+            settings.changePreset(index);
+            $scope.$emit("settingsUpdated");
+            poker.stop();
+            poker.reset();
+        }
+    };
+
+    $scope.deletePreset = function(index) {
+        noExportImport();
+        if(confirm("This will remove the preset and also RESET everything. No going back.\n\nContinue?")) {
+            settings.removePreset(index);
+            $scope.$emit("settingsUpdated");
+            poker.stop();
+            poker.reset();
+        }
+    };
+
+    $scope.exportPreset = function(index) {
+        var exportable = settings.export(index);
+        noExportImport();
+        $scope.exportImport.exporting = true;
+        $scope.exportImport.exportValue = exportable;
+    };
+
+    $scope.importPreset = function() {
+        noExportImport();
+        $scope.exportImport.importing = true;
+        $scope.exportImport.importValue = "";
+    };
+
+    $scope.importSave = function() {
+        var presetJson = $scope.exportImport.importValue;
+
+        noExportImport();
+
+        if ( presetJson == "" ) {
+            return;
+        }
+
+        settings.import(presetJson);
+        $scope.$emit("settingsUpdated");
+    };
+
+    $scope.savePresets = function() {
+        settings.save();
+    };
+
 }]);
 
 var dialogManager = {
@@ -660,6 +800,12 @@ var dialogManager = {
         });
         dialog.find(".controls-cancel").off("click.rbadialog").on("click.rbadialog", function() {
             that.closeDialog(dialog);
+        });
+
+        $(window).off("keyup.rbadialog").on("keyup.rbadialog", function(e) {
+            if(e.which == 27) {
+                that.closeDialog(dialog);
+            }
         });
     },
 
