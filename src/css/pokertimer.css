@@ -256,7 +256,7 @@ div.footer-copyright a
 }
 @media (min-width: 1200px) {
     .widget-biginfo {
-        font-size: 4.5em;
+        font-size: 4.0em;
     }
     .widget-smallinfo  {
         font-size: 1.7em;
