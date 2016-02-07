@@ -52,7 +52,9 @@ pokertimer.directive('scrollIf', function () {
     return function (scope, element, attributes) {
         scope.$watch(attributes.scrollIf, function(newValue,oldValue) {
             if(newValue) {
-                element[0].scrollIntoView();
+                var parent = $(element[0]).closest(".scroll-if-parent");
+                var target = $(element[0]).closest(".scroll-if-target");
+                target.scrollTop( $(element[0]).position().top - parent.position().top );
             }
         });
     }
