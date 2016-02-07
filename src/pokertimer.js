@@ -504,7 +504,7 @@ pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", f
     $scope.$on("reset",function() {
         $scope.settings = settings.get();
         $scope.activePlayers = $scope.players;
-        $scope.addins = 0;
+        $scope.addons = 0;
         $scope.rebuys = 0;
     });
 
