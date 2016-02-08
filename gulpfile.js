@@ -3,6 +3,69 @@
 
 var gulp = require('gulp');
 var browserSync = require('browser-sync');
+var path = require("path");
+var fileinclude = require("gulp-file-include");
+var rimraf = require("rimraf");
+var minifyJS = require("gulp-uglify");
+var sourcemaps = require("gulp-sourcemaps");
+var less = require("gulp-less");
+var rename = require("gulp-rename");
+var minifyCSS = require("gulp-minify-css");
+
+var paths = {
+  "staticfiles": "static/**/",
+  "bowerlib": "./bower_components/",
+  "css": "src/css/",
+  "html": "src/",
+  "dest": "dist/",  
+  "destCss": "dist/css/",
+  "destJs": "dist/js/"
+};
+
+gulp.task("clean", function (cb) {
+	rimraf(paths.dest, cb);
+});
+
+gulp.task("staticfiles", function() {
+    gulp.src(path.join(paths.staticfiles, "*.*"))   
+        .pipe(gulp.dest(paths.dest));    
+});
+
+gulp.task('html', [], function() {
+    gulp.src(path.join(paths.html, "*.html"))   
+        .pipe(fileinclude())
+        .pipe(gulp.dest(paths.dest));
+});
+
+gulp.task('min_js', [], function() {
+    gulp.src(path.join(paths.html, "*.js"))   
+        .pipe(sourcemaps.init())
+        .pipe(minifyJS({ mangle: true }))
+        .pipe(sourcemaps.write("./"))
+        .pipe(gulp.dest(paths.dest));
+});
+
+gulp.task('min_less', [], function() {
+    gulp.src(path.join(paths.css, "*.less"))   
+        .pipe(less())
+        .pipe(minifyCSS())
+        .pipe(gulp.dest(paths.destCss));
+});
+
+gulp.task("copy_lib", function() {
+    var libs = [
+        "jquery/dist/jquery.min.js",
+        "angular/angular.min.js"
+    ];
+    
+    for(var l in libs) {
+        gulp.src(path.join(paths.bowerlib, libs[l]))
+            .pipe(gulp.dest(paths.destJs));
+    }
+});
+
+gulp.task('build', ["html", "staticfiles", "min_less", "min_js", "copy_lib"], function() {
+});
 
 // this task utilizes the browsersync plugin
 // to create a dev server instance
@@ -13,17 +76,13 @@ gulp.task('serve', ['build'], function(done) {
     open: false,
     port: 9001,
     server: {
-      baseDir: ['./src'],
+      baseDir: ['./dist'],
       middleware: function(req, res, next) {
         res.setHeader('Access-Control-Allow-Origin', '*');
         next();
       }
     }
   }, done);
-});
-
-gulp.task('build', [], function() {
-   
 });
 
 // var gulp = require("gulp"),

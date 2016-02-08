@@ -4,19 +4,12 @@
     <title>PokerTimer History</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="css/pokertimer.css" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script src="pokertimer.js"></script>
-
-
     <LINK rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <LINK rel="icon" type="image/ico" href="favicon.ico">    
-    
     <meta name="author" content="Lenard Gunda" />
 </head>
 <body>
-
-<h1><span class="red">P</span>♠ker<span class="red">T</span>imer</h1>
-
+@@include('./partial/_header.html')
 <div id="application">
     <div class="application-full">
         <div class="widget">
@@ -71,10 +64,5 @@ first available test version<br/>
         </div>    
     </div>
 </div>
-
-<div class="footer-copyright">
-    <a href="usage.html">How to use?</a> | <a href="history.html">version 0.5.2 (beta)</a>, Copyright &copy; 2012-2015 by Lenard Gunda.
-</div>
-
-</body>
-</html>
+@@include('./partial/_footer.html')
+@@include("./partial/_html_end.html")
