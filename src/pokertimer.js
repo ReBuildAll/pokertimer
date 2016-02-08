@@ -423,6 +423,10 @@ pokertimer.factory("sfx", [function() {
         startLevel: function () {
             this.playAudio("#audio-level");
         },
+        
+        startAllIn: function () {
+            this.playAudio("#audio-allin");
+        },
 
         playAudio: function(id,loop) {
             var a = $(id)[0];
