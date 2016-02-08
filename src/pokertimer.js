@@ -430,6 +430,10 @@ pokertimer.factory("sfx", [function() {
             this.playAudio("#audio-allin");
         },
 
+        startPlayerOut: function () {
+            this.playAudio("#audio-playerout");
+        },
+
         playAudio: function(id,loop) {
             var a = $(id)[0];
             if ( a.pause ) {
@@ -484,6 +488,7 @@ pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", "
 
     $scope.onPlayerOut = function() {
         $scope.activePlayers--;
+        sfx.startPlayerOut();
     }
 
     $scope.onAllIn = function() {

@@ -3,7 +3,7 @@ CACHE MANIFEST
 # PokerTimer Application Cache
 #  for offline application access
 #
-# v0.5.2 BETA (2016-02-08)
+# v0.5.2 BETA (2016-02-08-C)
 #
 pokertimer.html
 history.html
@@ -17,6 +17,8 @@ sounds/ticking.mp3
 sounds/ticking.ogg
 sounds/allin.mp3
 sounds/allin.ogg
+sounds/playerout.mp3
+sounds/playerout.ogg
 images/background.png
 images/topbar.png
 images/break.png
