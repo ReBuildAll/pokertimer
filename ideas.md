@@ -2,6 +2,9 @@
 This file contains rough plans of what I have in mind.
 
 ### v0.6
+- Add keyboard shortcuts
+- Add sound for player out
+- Add help overlay that would list possible keyboard shortcuts
 - When last player is out, show game over, stop counting
 - Add option to undo player out
 
