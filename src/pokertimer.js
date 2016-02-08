@@ -233,7 +233,7 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
             var hasLegacy = false;
             var levels = window.localStorage.getItem("LennuPokerTimer_Levels");
             if(levels) {
-                legacy.levels = levels;
+                legacy.levels = JSON.parse(levels);
                 hasLegacy = true;
             }
 
@@ -253,9 +253,11 @@ pokertimer.factory("settings", ["$rootScope", function($rootScope) {
             var prize = window.localStorage.getItem("LennuPokerTimer_Prize");
             if (prize) {
                 var prizeValues = JSON.parse(prize);
-                hasLegacy = true;
-
-                legacy.prizeSharing = prizeValues.sharing;
+                
+                if ( !!prizeValues && !!prizeValues.sharing && prizeValues.sharing.length > 0 ) {
+                    hasLegacy = true;
+                    legacy.prizeSharing = prizeValues.sharing;
+                }
             }
 
             return hasLegacy ? legacy : undefined;
@@ -433,7 +435,7 @@ pokertimer.factory("sfx", [function() {
             if ( a.pause ) {
                 a.pause();
             }
-            if ( loop ) {
+            if ( !!loop ) {
                 a.loop = true;
             }
             a.currentTime = 0;
@@ -451,7 +453,7 @@ pokertimer.factory("sfx", [function() {
     return sfxInstance;
 }]);
 
-pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", function($scope, $window, settings, poker){
+pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", "sfx", function($scope, $window, settings, poker, sfx){
     $scope.players = 2;
     $scope.activePlayers = 2;
     $scope.addons = 0;
@@ -482,6 +484,10 @@ pokertimer.controller("tournament", ["$scope", "$window", "settings", "poker", f
 
     $scope.onPlayerOut = function() {
         $scope.activePlayers--;
+    }
+
+    $scope.onAllIn = function() {
+        sfx.startAllIn();
     }
 
     $scope.removePlayer = function() {

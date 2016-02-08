@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+    </head>
+<body>
+    <h1>PokerTimer legacy settings import</h1>
+    <p>If we found settings, you will find them below. Copy and import them into the new pokertimer.</p>
+    <hr/>
+    <script>
+        
+        function defaultLevels_400bi_min6() {
+            return [];
+        }
+        
+            var legacy = {
+                name: "Settings from v0.3",
+                levels: defaultLevels_400bi_min6(),
+                prizeSharing: [50,30,20],
+                buyinCost: 10,
+                buyinChips: 400,
+                addonChips: 400,
+                addonCost: 10,
+                rebuyChips: 400,
+                rebuyCost: 10,
+                currency: "€"
+            };
+
+            var hasLegacy = false;
+            var levels = window.localStorage.getItem("LennuPokerTimer_Levels");
+            if(levels) {
+                legacy.levels = JSON.parse(levels);
+                hasLegacy = true;
+            }
+
+            var settings = window.localStorage.getItem("LennuPokerTimer_Settings");
+            if (settings) {
+                var settingsValues = JSON.parse(settings);
+                hasLegacy = true;
+
+                legacy.buyinCost = settingsValues.buyinCost;
+                legacy.buyinChips = settingsValues.buyinChips;
+                legacy.addonChips = settingsValues.addonChips;
+                legacy.addonCost = settingsValues.addonCost;
+                legacy.rebuyChips = settingsValues.rebuyChips;
+                legacy.rebuyCost = settingsValues.rebuyCost;
+            }
+
+            var prize = window.localStorage.getItem("LennuPokerTimer_Prize");
+            if (prize) {
+                var prizeValues = JSON.parse(prize);
+                
+                if ( !!prizeValues && !!prizeValues.sharing && prizeValues.sharing.length > 0 ) {
+                    hasLegacy = true;
+                    legacy.prizeSharing = prizeValues.sharing;
+                }
+            }
+
+            if ( hasLegacy ) {
+                document.write(JSON.stringify(legacy));   
+            }
+            else {
+                document.write ( "no legacy settings found");
+            }
+    
+    </script>    
+</html>
+    

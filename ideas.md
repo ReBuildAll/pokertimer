@@ -7,6 +7,7 @@ This file contains rough plans of what I have in mind.
 - Add help overlay that would list possible keyboard shortcuts
 - When last player is out, show game over, stop counting
 - Add option to undo player out
+- Add better error handling
 
 ### v0.x
 - Support pinning for iOS, Android and Windows Phone

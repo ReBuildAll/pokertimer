@@ -93,6 +93,7 @@
                     </tr>
                     <tr>
                         <td class="left">
+                            <input ng-click="onAllIn()" type="button" value="ALL-IN!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
                             <input ng-click="onPlayerOut()" type="button" value="Player Out!" class="tournament" ng-class="{disabled: activePlayers < 2}" ng-disabled="activePlayers < 2" />
                         </td>
                     </tr>
