@@ -66,7 +66,7 @@ gulp.task('html', [], function() {
 gulp.task('min_js', [], function() {
     gulp.src(path.join(paths.html, "*.js"))   
         .pipe(sourcemaps.init())
-        .pipe(minifyJS({ mangle: true }))
+     //   .pipe(minifyJS({ mangle: true }))
         .pipe(sourcemaps.write("./"))
         .pipe(gulp.dest(paths.dest));
 });

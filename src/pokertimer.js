@@ -307,6 +307,9 @@ pokertimer.factory("poker", ["$rootScope", "$interval", "settings", "sfx", funct
             this.alreadyElapsed = 0;
             this.lastStart = new Date();
 
+            sfx.stopWarning();
+            sfx.startLevel();
+
             $rootScope.$broadcast("nextlevel");
             this.updateTime();
         },
@@ -371,6 +374,9 @@ pokertimer.factory("poker", ["$rootScope", "$interval", "settings", "sfx", funct
             this.updateTime();
 
             this.isLevelActive = true;
+
+            sfx.stopWarning();
+            sfx.startLevel();
 
             var pokerService = this;
             this.intervalId = $interval(function() {
